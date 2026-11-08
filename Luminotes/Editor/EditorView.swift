@@ -34,10 +34,13 @@ struct EditorView: View {
                 .scrollIndicators(.hidden)
                 .id(viewModel.note.id)
                 .onChange(of: scrollToBottomToken) { _, _ in
-                    // Defer until the current layout pass finishes; the bottom
-                    // anchor may not exist yet when the button is clicked.
-                    DispatchQueue.main.async {
-                        proxy.scrollTo("editorBottom", anchor: .bottom)
+                    // A lazy stack realizes more rows as we scroll, so the
+                    // bottom sentinel keeps moving. Chase it for a few layout
+                    // passes so one click reaches the real end of the note.
+                    for delay in [0.0, 0.05, 0.15, 0.3, 0.5] {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                            proxy.scrollTo("editorBottom", anchor: .bottom)
+                        }
                     }
                 }
             }
