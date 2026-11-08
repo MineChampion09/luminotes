@@ -149,7 +149,7 @@ struct LuminotesApp: App {
         }
 
         Settings {
-            SettingsView()
+            SettingsView(viewModel: viewModel)
         }
     }
 

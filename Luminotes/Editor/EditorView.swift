@@ -32,6 +32,14 @@ struct EditorView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                 }
                 .scrollIndicators(.hidden)
+                .onDrop(
+                    of: [.fileURL, .url],
+                    delegate: BlockDropDelegate(
+                        targetID: nil,
+                        viewModel: viewModel,
+                        dropTarget: $viewModel.dropTarget
+                    )
+                )
                 .id(viewModel.note.id)
                 .onChange(of: scrollToBottomToken) { _, _ in
                     // A lazy stack realizes more rows as we scroll, so the

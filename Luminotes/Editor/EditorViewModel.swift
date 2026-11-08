@@ -55,6 +55,7 @@ final class EditorViewModel: ObservableObject {
 
     private static let lastProjectPathKey = "Luminotes.lastProjectPath"
     private static let lastSelectedPathKey = "Luminotes.lastSelectedPath"
+    private static let attachmentFoldersKey = "Luminotes.attachmentFolders"
 
     init(store: NoteStore = NoteStore()) {
         self.store = store
@@ -115,6 +116,32 @@ final class EditorViewModel: ObservableObject {
 
     var currentRelativePath: String {
         selectedFileID ?? ""
+    }
+
+    /// Optional project-relative folder for imported PDFs and images. An empty
+    /// value keeps the default `Assets` folder beside each note.
+    var attachmentFolder: String {
+        guard let projectURL else { return "" }
+        let folders = UserDefaults.standard.dictionary(
+            forKey: Self.attachmentFoldersKey
+        ) as? [String: String] ?? [:]
+        return folders[projectURL.standardizedFileURL.path] ?? ""
+    }
+
+    func setAttachmentFolder(_ folder: String) {
+        guard let projectURL else { return }
+        var folders = UserDefaults.standard.dictionary(
+            forKey: Self.attachmentFoldersKey
+        ) as? [String: String] ?? [:]
+        let key = projectURL.standardizedFileURL.path
+        let trimmed = folder.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if trimmed.isEmpty {
+            folders.removeValue(forKey: key)
+        } else {
+            folders[key] = trimmed
+        }
+        UserDefaults.standard.set(folders, forKey: Self.attachmentFoldersKey)
     }
 
     // MARK: - Presentation
@@ -995,7 +1022,11 @@ final class EditorViewModel: ObservableObject {
         let path: String
         if let relative = projectStore.relativePath(from: currentFileURL, to: url) {
             path = relative
-        } else if let imported = try? projectStore.importFile(from: url, forNoteAt: currentFileURL) {
+        } else if let imported = try? projectStore.importFile(
+            from: url,
+            forNoteAt: currentFileURL,
+            attachmentFolder: attachmentFolder
+        ) {
             path = imported
         } else {
             path = url.path
@@ -1021,7 +1052,11 @@ final class EditorViewModel: ObservableObject {
             guard let index = note.blocks.firstIndex(where: { $0.id == blockID }) else { return }
 
             if let projectStore, let currentFileURL {
-                let path = try projectStore.importImage(from: url, forNoteAt: currentFileURL)
+                let path = try projectStore.importImage(
+                    from: url,
+                    forNoteAt: currentFileURL,
+                    attachmentFolder: attachmentFolder
+                )
                 mutateNote { note in
                     note.blocks[index].imagePath = path
                     note.blocks[index].imageAsset = nil

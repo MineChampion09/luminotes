@@ -41,8 +41,9 @@ git push origin v1.0.0
   sidebar, alongside PDF and image assets. The current folder card is the first
   item; folders start collapsed and can be expanded individually. The selected
   file uses a quiet neutral row rather than a colored highlight.
-- Drag a PDF or image from the sidebar into a note to embed it. Dropped files
-  outside the project are copied into an `Assets` folder beside the note.
+- Drag a PDF or image from Finder or the sidebar into a note to embed it.
+  Files from outside the project are copied into the project's attachment
+  folder (default: an `Assets` folder beside the note).
 - Files are read as Markdown and written back to the same path after a short
   autosave debounce.
 - Frontmatter is preserved.
@@ -108,6 +109,8 @@ to `.ultraThinMaterial` and bordered buttons.
   with hyphenation to keep line breaks natural. Justified text is on by default.
 - Open **Settings** with `⌘,` to change the theme, body font size, line spacing,
   editor width, justification, and table layout. Changes apply immediately.
+  Settings also has a per-project attachment folder (for example `Dokumente`)
+  for imported PDFs and images.
 - The toolbar also has a light/dark appearance switch. Right-click it to return
   to the system appearance, and a **go to bottom** button to jump to the end of
   the note.

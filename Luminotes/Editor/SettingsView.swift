@@ -1,12 +1,15 @@
+import AppKit
 import SwiftUI
 
 struct SettingsView: View {
+    @ObservedObject var viewModel: EditorViewModel
     @AppStorage("Luminotes.appearance") private var appearance = "light"
     @AppStorage("Luminotes.justifyText") private var justifyText = true
     @AppStorage(BlockTypography.bodyFontSizeKey) private var bodyFontSize = 16.0
     @AppStorage(BlockTypography.lineSpacingKey) private var lineSpacing = 4.0
     @AppStorage("Luminotes.editorWidth") private var editorWidth = 872.0
     @AppStorage("Luminotes.tableLayoutMode") private var tableLayout = "fillWidth"
+    @State private var attachmentFolder = ""
 
     private var preferredScheme: ColorScheme? {
         switch appearance {
@@ -63,6 +66,29 @@ struct SettingsView: View {
                 .pickerStyle(.segmented)
             }
 
+            Section("Project") {
+                if let projectURL = viewModel.projectURL {
+                    LabeledContent("Attachment folder") {
+                        HStack(spacing: 8) {
+                            TextField("Assets", text: $attachmentFolder)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(width: 160)
+                            Button("Choose…") {
+                                chooseAttachmentFolder()
+                            }
+                        }
+                    }
+
+                    Text("Relative to \(projectURL.lastPathComponent). Leave empty to use an Assets folder beside each note.")
+                        .font(.system(size: 10.5))
+                        .foregroundStyle(Palette.tertiaryText)
+                } else {
+                    Text("Open a project to configure its attachment folder.")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Palette.secondaryText)
+                }
+            }
+
             Section {
                 HStack {
                     Text("Changes apply immediately.")
@@ -76,8 +102,17 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 460, height: 470)
+        .frame(width: 460, height: 600)
         .preferredColorScheme(preferredScheme)
+        .onAppear {
+            attachmentFolder = viewModel.attachmentFolder
+        }
+        .onChange(of: viewModel.projectURL) { _, _ in
+            attachmentFolder = viewModel.attachmentFolder
+        }
+        .onChange(of: attachmentFolder) { _, newValue in
+            viewModel.setAttachmentFolder(newValue)
+        }
     }
 
     private func resetToDefaults() {
@@ -87,5 +122,32 @@ struct SettingsView: View {
         lineSpacing = 4
         editorWidth = 872
         tableLayout = "fillWidth"
+    }
+
+    private func chooseAttachmentFolder() {
+        guard let root = viewModel.projectURL?.standardizedFileURL else { return }
+
+        let panel = NSOpenPanel()
+        panel.title = "Choose Attachment Folder"
+        panel.prompt = "Choose"
+        panel.message = "Files dropped into a note will be copied here."
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.allowsMultipleSelection = false
+        panel.canCreateDirectories = true
+        panel.directoryURL = root
+
+        guard panel.runModal() == .OK, let selected = panel.url?.standardizedFileURL else {
+            return
+        }
+
+        let rootPath = root.path.hasSuffix("/") ? root.path : root.path + "/"
+        if selected.path == root.path {
+            attachmentFolder = ""
+        } else if selected.path.hasPrefix(rootPath) {
+            attachmentFolder = String(selected.path.dropFirst(rootPath.count))
+        } else {
+            NSSound.beep()
+        }
     }
 }

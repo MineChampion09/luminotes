@@ -144,27 +144,70 @@ struct ProjectStore {
         try text.write(to: url, atomically: true, encoding: .utf8)
     }
 
-    /// Copies a file into an `Assets` folder beside the note and returns a
-    /// Markdown path relative to that note.
-    func importFile(from sourceURL: URL, forNoteAt noteURL: URL) throws -> String {
-        let noteDirectory = noteURL.deletingLastPathComponent()
-        let assetsDirectory = noteDirectory.appendingPathComponent("Assets", isDirectory: true)
-        try fileManager.createDirectory(at: assetsDirectory, withIntermediateDirectories: true)
+    /// Copies a file into the configured attachment folder (or an `Assets`
+    /// folder beside the note) and returns a Markdown path relative to the note.
+    func importFile(
+        from sourceURL: URL,
+        forNoteAt noteURL: URL,
+        attachmentFolder: String? = nil
+    ) throws -> String {
+        let destinationDirectory = attachmentDirectory(
+            for: noteURL,
+            configuredFolder: attachmentFolder
+        )
+        try fileManager.createDirectory(
+            at: destinationDirectory,
+            withIntermediateDirectories: true
+        )
 
         let ext = sourceURL.pathExtension
         let base = Self.sanitizedFilename(sourceURL.deletingPathExtension().lastPathComponent)
         let destination = uniqueURL(
-            in: assetsDirectory,
+            in: destinationDirectory,
             baseName: base.isEmpty ? "asset" : base,
             ext: ext.isEmpty ? "png" : ext
         )
 
         try fileManager.copyItem(at: sourceURL, to: destination)
-        return "Assets/\(destination.lastPathComponent)"
+        return relativePath(from: noteURL, to: destination)
+            ?? destination.lastPathComponent
     }
 
-    func importImage(from sourceURL: URL, forNoteAt noteURL: URL) throws -> String {
-        try importFile(from: sourceURL, forNoteAt: noteURL)
+    func importImage(
+        from sourceURL: URL,
+        forNoteAt noteURL: URL,
+        attachmentFolder: String? = nil
+    ) throws -> String {
+        try importFile(
+            from: sourceURL,
+            forNoteAt: noteURL,
+            attachmentFolder: attachmentFolder
+        )
+    }
+
+    private func attachmentDirectory(
+        for noteURL: URL,
+        configuredFolder: String?
+    ) -> URL {
+        let fallback = noteURL.deletingLastPathComponent()
+            .appendingPathComponent("Assets", isDirectory: true)
+
+        guard let configuredFolder else { return fallback }
+        let trimmed = configuredFolder
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        guard !trimmed.isEmpty, !trimmed.hasPrefix("~") else { return fallback }
+
+        let root = folderURL.standardizedFileURL
+        let candidate = root
+            .appendingPathComponent(trimmed, isDirectory: true)
+            .standardizedFileURL
+        let rootPath = root.path.hasSuffix("/") ? root.path : root.path + "/"
+
+        guard candidate.path == root.path || candidate.path.hasPrefix(rootPath) else {
+            return fallback
+        }
+        return candidate
     }
 
     /// Returns a path from the note's directory to a file inside the project.
