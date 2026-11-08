@@ -88,7 +88,11 @@ struct BlockRowView: View {
 
     private var bottomPadding: CGFloat {
         switch block.type {
-        case .divider, .image, .pdf, .mermaid, .table:
+        case .table:
+            // The table's glass surface casts slightly below its layout frame;
+            // keep enough room so the next block never overlaps its edge.
+            return 16
+        case .divider, .image, .pdf, .mermaid:
             return 8
         default:
             return BlockTypography.bottomPadding(for: block.type)
