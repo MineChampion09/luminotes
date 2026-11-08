@@ -6,43 +6,12 @@ struct QuickOpenView: View {
 
     @State private var query = ""
     @State private var selectedIndex = 0
+    @State private var entries: [QuickOpenEntry] = []
+    @State private var results: [QuickOpenEntry] = []
+    @State private var totalMatches = 0
     @FocusState private var isSearchFocused: Bool
 
-    private var results: [ProjectFile] {
-        let files = viewModel.projectFiles
-        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-
-        guard !trimmed.isEmpty else {
-            return files.sorted { $0.modifiedAt > $1.modifiedAt }
-        }
-
-        let tokens = trimmed.split(whereSeparator: \.isWhitespace).map(String.init)
-
-        return files
-            .filter { file in
-                let haystack = (file.displayName + " " + file.relativePath).lowercased()
-                return tokens.allSatisfy { haystack.contains($0) }
-            }
-            .sorted { lhs, rhs in
-                let leftScore = score(lhs, tokens: tokens)
-                let rightScore = score(rhs, tokens: tokens)
-                if leftScore != rightScore { return leftScore < rightScore }
-                if lhs.isMarkdown != rhs.isMarkdown { return lhs.isMarkdown }
-                return lhs.displayName.localizedStandardCompare(rhs.displayName) == .orderedAscending
-            }
-    }
-
-    private func score(_ file: ProjectFile, tokens: [String]) -> Int {
-        guard let first = tokens.first else { return 0 }
-        let name = file.displayName.lowercased()
-        let path = file.relativePath.lowercased()
-
-        if name == first { return 0 }
-        if name.hasPrefix(first) { return 1 }
-        if name.contains(first) { return 2 }
-        if path.contains(first) { return 3 }
-        return 4
-    }
+    private let maxVisibleResults = 200
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -78,9 +47,17 @@ struct QuickOpenView: View {
         .onAppear {
             query = ""
             selectedIndex = 0
+            rebuildEntries()
             DispatchQueue.main.async {
                 isSearchFocused = true
             }
+        }
+        .onChange(of: query) { _, _ in
+            selectedIndex = 0
+            refreshResults()
+        }
+        .onChange(of: viewModel.projectFiles) { _, _ in
+            rebuildEntries()
         }
     }
 
@@ -107,9 +84,6 @@ struct QuickOpenView: View {
                 .onExitCommand {
                     isPresented = false
                 }
-                .onChange(of: query) { _, _ in
-                    selectedIndex = 0
-                }
 
             if !query.isEmpty {
                 Button {
@@ -131,13 +105,13 @@ struct QuickOpenView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(spacing: 2) {
-                    ForEach(Array(results.enumerated()), id: \.element.id) { index, file in
+                    ForEach(Array(results.enumerated()), id: \.element.id) { index, entry in
                         Button {
                             selectedIndex = index
-                            openSelected()
+                            open(entry)
                         } label: {
                             QuickOpenRow(
-                                file: file,
+                                file: entry.file,
                                 isSelected: index == safeSelectedIndex
                             )
                         }
@@ -147,7 +121,7 @@ struct QuickOpenView: View {
                                 selectedIndex = index
                             }
                         }
-                        .id(file.id)
+                        .id(entry.id)
                     }
                 }
                 .padding(6)
@@ -197,12 +171,19 @@ struct QuickOpenView: View {
             Text("↵ Open")
             Text("esc Close")
             Spacer(minLength: 0)
-            Text("\(results.count) file\(results.count == 1 ? "" : "s")")
+            Text(fileCountLabel)
         }
         .font(.system(size: 10, weight: .regular))
         .foregroundStyle(Palette.tertiaryText)
         .padding(.horizontal, 14)
         .frame(height: 30)
+    }
+
+    private var fileCountLabel: String {
+        if totalMatches > results.count {
+            return "\(results.count) of \(totalMatches) files"
+        }
+        return "\(totalMatches) file\(totalMatches == 1 ? "" : "s")"
     }
 
     private var safeSelectedIndex: Int {
@@ -234,10 +215,103 @@ struct QuickOpenView: View {
 
     private func openSelected() {
         guard results.indices.contains(safeSelectedIndex) else { return }
-        let file = results[safeSelectedIndex]
-        isPresented = false
-        viewModel.openFile(file)
+        open(results[safeSelectedIndex])
     }
+
+    private func open(_ entry: QuickOpenEntry) {
+        isPresented = false
+        viewModel.openFile(entry.file)
+    }
+
+    private func rebuildEntries() {
+        entries = viewModel.projectFiles
+            .sorted { $0.modifiedAt > $1.modifiedAt }
+            .map { file in
+                QuickOpenEntry(
+                    file: file,
+                    name: file.displayName.lowercased(),
+                    path: file.relativePath.lowercased()
+                )
+            }
+        refreshResults()
+    }
+
+    private func refreshResults() {
+        let all = searchResults(for: query, in: entries)
+        totalMatches = all.count
+        results = Array(all.prefix(maxVisibleResults))
+        selectedIndex = min(max(0, selectedIndex), max(0, results.count - 1))
+    }
+
+    private func searchResults(
+        for query: String,
+        in entries: [QuickOpenEntry]
+    ) -> [QuickOpenEntry] {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !trimmed.isEmpty else { return entries }
+
+        let tokens = trimmed.split(whereSeparator: \.isWhitespace).map(String.init)
+        var matches: [(entry: QuickOpenEntry, score: Int)] = []
+        matches.reserveCapacity(min(entries.count, 128))
+
+        for entry in entries {
+            guard let score = matchScore(entry, tokens: tokens) else { continue }
+            matches.append((entry, score))
+        }
+
+        matches.sort { lhs, rhs in
+            if lhs.score != rhs.score { return lhs.score < rhs.score }
+            if lhs.entry.file.isMarkdown != rhs.entry.file.isMarkdown {
+                return lhs.entry.file.isMarkdown
+            }
+            if lhs.entry.file.modifiedAt != rhs.entry.file.modifiedAt {
+                return lhs.entry.file.modifiedAt > rhs.entry.file.modifiedAt
+            }
+            return lhs.entry.file.displayName.localizedStandardCompare(
+                rhs.entry.file.displayName
+            ) == .orderedAscending
+        }
+
+        return matches.map(\.entry)
+    }
+
+    private func matchScore(_ entry: QuickOpenEntry, tokens: [String]) -> Int? {
+        var total = 0
+        for token in tokens {
+            guard let score = tokenScore(token, entry: entry) else { return nil }
+            total += score
+        }
+        return total
+    }
+
+    private func tokenScore(_ token: String, entry: QuickOpenEntry) -> Int? {
+        if entry.name == token { return 0 }
+        if entry.name.hasPrefix(token) { return 1 }
+        if entry.name.contains(token) { return 2 }
+        if entry.path.contains(token) { return 3 }
+        if isSubsequence(token, of: entry.name) { return 4 }
+        if isSubsequence(token, of: entry.path) { return 5 }
+        return nil
+    }
+
+    private func isSubsequence(_ needle: String, of haystack: String) -> Bool {
+        var index = haystack.startIndex
+        for character in needle {
+            guard let found = haystack[index...].firstIndex(of: character) else {
+                return false
+            }
+            index = haystack.index(after: found)
+        }
+        return true
+    }
+}
+
+private struct QuickOpenEntry: Identifiable {
+    let file: ProjectFile
+    let name: String
+    let path: String
+
+    var id: String { file.id }
 }
 
 private struct QuickOpenRow: View {
