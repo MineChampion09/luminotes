@@ -36,6 +36,7 @@ final class EditorViewModel: ObservableObject {
     @Published var dropTarget: DropTarget?
     @Published var titleFocusRequest: UUID?
     @Published var isSidebarVisible = true
+    @Published var isQuickOpenPresented = false
     @Published private(set) var saveState: SaveState = .saved
 
     @Published private(set) var projectURL: URL?

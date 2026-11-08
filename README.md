@@ -51,7 +51,9 @@ git push origin v1.0.0
 - The note title is the file name. Editing the title renames the file on save.
 - New notes are created with **⌘N** as `Untitled.md` in the project root.
 - The last project and selected file are restored on launch.
-- Search filters the sidebar by name or relative path.
+- Search filters the sidebar by name or relative path. Press **⌘K** for a
+  Spotlight-style quick open across every file in the project; use ↑/↓ to move
+  and Return to open.
 
 There is a ready-to-open `Sample Project/` folder in this repository.
 
@@ -160,6 +162,7 @@ beside the exported file.
 ## Keyboard shortcuts
 
 - `⌘O` open a folder as a project
+- `⌘K` quick open / search project files
 - `⌘N` new note (project-aware)
 - `⌘⇧R` rename the current note / focus the title
 - `⌘⇧M` edit inline math beside the caret

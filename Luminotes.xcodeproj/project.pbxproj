@@ -38,6 +38,7 @@
 		B000000000000000000009C /* PDFEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000000000000000009C /* PDFEditorView.swift */; };
 		B000000000000000000009D /* PDFAnnotations.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000000000000000009D /* PDFAnnotations.swift */; };
 		B000000000000000000009E /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = F000000000000000000005D /* AppIcon.icon */; };
+		B000000000000000000009F /* QuickOpenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000000000000000005E /* QuickOpenView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -73,6 +74,7 @@
 		F000000000000000000005B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F000000000000000000005C /* Luminotes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Luminotes.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F000000000000000000005D /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
+		F000000000000000000005E /* QuickOpenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickOpenView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -140,6 +142,7 @@
 				F000000000000000000000C /* RootView.swift */,
 				F000000000000000000000D /* SidebarView.swift */,
 				F000000000000000000000E /* SlashCommandMenuView.swift */,
+				F000000000000000000005E /* QuickOpenView.swift */,
 			);
 			path = Editor;
 			sourceTree = "<group>";
@@ -278,6 +281,7 @@
 				B000000000000000000000C /* RootView.swift in Sources */,
 				B000000000000000000000D /* SidebarView.swift in Sources */,
 				B000000000000000000000E /* SlashCommandMenuView.swift in Sources */,
+				B000000000000000000009F /* QuickOpenView.swift in Sources */,
 				B000000000000000000000F /* MarkdownCodec.swift in Sources */,
 				B0000000000000000000010 /* MarkdownParser.swift in Sources */,
 				B0000000000000000000011 /* NoteStore.swift in Sources */,

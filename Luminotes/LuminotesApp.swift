@@ -77,6 +77,13 @@ struct LuminotesApp: App {
                 .keyboardShortcut("e", modifiers: [.command, .option])
             }
 
+            CommandMenu("Go") {
+                Button("Quick Open…") {
+                    viewModel.isQuickOpenPresented.toggle()
+                }
+                .keyboardShortcut("k", modifiers: .command)
+            }
+
             CommandMenu("Format") {
                 Button("Text") {
                     viewModel.turnFocusedBlock(into: .paragraph)

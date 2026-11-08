@@ -21,6 +21,16 @@ struct RootView: View {
             .animation(.easeInOut(duration: 0.22), value: viewModel.isSidebarVisible)
         }
         .background(WindowConfigurator())
+        .overlay {
+            if viewModel.isQuickOpenPresented {
+                QuickOpenView(
+                    viewModel: viewModel,
+                    isPresented: $viewModel.isQuickOpenPresented
+                )
+                .transition(.opacity)
+            }
+        }
+        .animation(.easeOut(duration: 0.12), value: viewModel.isQuickOpenPresented)
     }
 
     @ViewBuilder
