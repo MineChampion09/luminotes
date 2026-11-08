@@ -34,7 +34,11 @@ struct EditorView: View {
                 .scrollIndicators(.hidden)
                 .id(viewModel.note.id)
                 .onChange(of: scrollToBottomToken) { _, _ in
-                    proxy.scrollTo("editorBottom", anchor: .bottom)
+                    // Defer until the current layout pass finishes; the bottom
+                    // anchor may not exist yet when the button is clicked.
+                    DispatchQueue.main.async {
+                        proxy.scrollTo("editorBottom", anchor: .bottom)
+                    }
                 }
             }
 
