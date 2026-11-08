@@ -354,11 +354,10 @@ struct SidebarView: View {
                     viewModel.openProjectPanel()
                 } label: {
                     Label("Choose Folder…", systemImage: "folder")
-                        .font(.system(size: 12, weight: .medium))
-                        .padding(.horizontal, 6)
-                        .frame(height: 30)
+                        .font(.system(size: 11.5, weight: .medium))
                 }
                 .glassButtonStyle(prominent: true)
+                .controlSize(.small)
             }
             .padding(.horizontal, 22)
 
