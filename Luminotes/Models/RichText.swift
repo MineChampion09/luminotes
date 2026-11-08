@@ -134,17 +134,23 @@ struct RichText: Codable, Equatable, Hashable, Sendable {
         let sourceRuns = runs.isEmpty ? [Run(text: "")] : runs
         for run in sourceRuns {
             if allowsInlineStyles, let latex = run.math, !latex.isEmpty {
+                let mathFontSize = max(baseFont.pointSize - 1, 11)
                 if let image = MathImageRenderer.shared.image(
                     latex: latex,
-                    fontSize: max(baseFont.pointSize - 1, 11),
+                    fontSize: mathFontSize,
                     color: color,
                     displayStyle: mathDisplayStyle
                 ) {
+                    let descent = MathImageRenderer.shared.descent(
+                        latex: latex,
+                        fontSize: mathFontSize,
+                        displayStyle: mathDisplayStyle
+                    )
                     let attachment = NSTextAttachment()
                     attachment.image = image
                     attachment.bounds = CGRect(
                         x: 0,
-                        y: -max(baseFont.pointSize * 0.18, 2),
+                        y: -descent,
                         width: image.size.width,
                         height: image.size.height
                     )

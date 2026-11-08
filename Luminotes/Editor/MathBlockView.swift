@@ -29,13 +29,18 @@ struct MathBlockView: View {
                     .font(.system(size: 13))
                     .foregroundStyle(Palette.tertiaryText)
             } else if let mathImage {
-                HStack(spacing: 0) {
-                    Spacer(minLength: 0)
+                // Use the natural size when it fits; otherwise scale the
+                // equation down so it is never clipped by the editor width.
+                ViewThatFits(in: .horizontal) {
                     Image(nsImage: mathImage)
                         .interpolation(.high)
-                    Spacer(minLength: 0)
+
+                    Image(nsImage: mathImage)
+                        .resizable()
+                        .interpolation(.high)
+                        .scaledToFit()
                 }
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, alignment: .center)
             } else {
                 // The image renderer is the primary path; this keeps a usable
                 // fallback if an expression cannot be rasterized.

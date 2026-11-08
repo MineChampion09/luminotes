@@ -1,6 +1,6 @@
+@_spi(Textual) import SwiftUIMath
 import AppKit
 import SwiftUI
-import SwiftUIMath
 
 @MainActor
 final class MathImageRenderer {
@@ -40,6 +40,10 @@ final class MathImageRenderer {
             .mathFont(.init(name: .latinModern, size: fontSize))
             .mathTypesettingStyle(displayStyle ? .display : .text)
             .foregroundStyle(swiftUIColor)
+            // Math can draw outside its reported layout bounds. Force the ideal
+            // size before rasterizing so accents and wide expressions are not
+            // cropped by ImageRenderer.
+            .fixedSize()
             .padding(.horizontal, 1)
 
         let renderer = ImageRenderer(content: content)
@@ -48,5 +52,20 @@ final class MathImageRenderer {
         guard let image = renderer.nsImage else { return nil }
         cache.setObject(image, forKey: key)
         return image
+    }
+
+    /// Distance from the math baseline to the bottom of the rendered image.
+    /// Used to align inline math with the surrounding text baseline.
+    func descent(
+        latex: String,
+        fontSize: CGFloat,
+        displayStyle: Bool = false
+    ) -> CGFloat {
+        Math.typographicBounds(
+            for: latex,
+            fitting: ProposedViewSize(width: nil, height: nil),
+            font: .init(name: .latinModern, size: fontSize),
+            style: displayStyle ? .display : .text
+        ).descent
     }
 }
