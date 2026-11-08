@@ -106,8 +106,11 @@ to `.ultraThinMaterial` and bordered buttons.
   **Edit** button to change the source; the diagram updates live as you type.
 - The toolbar has a **justify text** toggle for a LaTeX-style filled text block,
   with hyphenation to keep line breaks natural. Justified text is on by default.
-- Luminotes starts in light mode. The toolbar also has a light/dark appearance
-  switch. Right-click it to return to the system appearance.
+- Open **Settings** with `⌘,` to change the theme, body font size, line spacing,
+  editor width, justification, and table layout. Changes apply immediately.
+- The toolbar also has a light/dark appearance switch. Right-click it to return
+  to the system appearance, and a **go to bottom** button to jump to the end of
+  the note.
 - Tables fill the editor width by default. The table options menu at the top-left
   of a table switches between **Fill width** and **Fit content**, and adds or
   removes rows and columns. Cell text wraps and rows grow so the full content
@@ -163,6 +166,7 @@ beside the exported file.
 
 - `⌘O` open a folder as a project
 - `⌘K` quick open / search project files
+- `⌘,` open settings
 - `⌘N` new note (project-aware)
 - `⌘⇧R` rename the current note / focus the title
 - `⌘⇧M` edit inline math beside the caret

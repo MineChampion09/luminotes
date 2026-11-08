@@ -19,32 +19,60 @@ enum Palette {
 }
 
 enum BlockTypography {
-    static func font(for type: BlockType) -> NSFont {
+    static let bodyFontSizeKey = "Luminotes.bodyFontSize"
+    static let lineSpacingKey = "Luminotes.lineSpacing"
+    static let defaultBodyFontSize: CGFloat = 16
+    static let defaultLineSpacing: CGFloat = 4
+
+    static var storedBodyFontSize: CGFloat {
+        let value = UserDefaults.standard.double(forKey: bodyFontSizeKey)
+        return value > 0 ? CGFloat(value) : defaultBodyFontSize
+    }
+
+    static var storedLineSpacing: CGFloat {
+        if let value = UserDefaults.standard.object(forKey: lineSpacingKey) as? Double {
+            return CGFloat(value)
+        }
+        return defaultLineSpacing
+    }
+
+    static var textScale: CGFloat {
+        max(0.75, min(2, storedBodyFontSize / defaultBodyFontSize))
+    }
+
+    static func font(for type: BlockType, bodyFontSize: CGFloat? = nil) -> NSFont {
+        let size = bodyFontSize ?? storedBodyFontSize
+        let scale = max(0.75, min(2, size / defaultBodyFontSize))
+
+        func scaled(_ base: CGFloat) -> CGFloat {
+            max(1, (base * scale).rounded())
+        }
+
         switch type {
         case .paragraph, .bulletedList, .numberedList, .todo, .toggle:
-            return .systemFont(ofSize: 16, weight: .regular)
+            return .systemFont(ofSize: scaled(16), weight: .regular)
         case .heading1:
-            return .systemFont(ofSize: 32, weight: .bold)
+            return .systemFont(ofSize: scaled(32), weight: .bold)
         case .heading2:
-            return .systemFont(ofSize: 24, weight: .bold)
+            return .systemFont(ofSize: scaled(24), weight: .bold)
         case .heading3:
-            return .systemFont(ofSize: 20, weight: .semibold)
+            return .systemFont(ofSize: scaled(20), weight: .semibold)
         case .heading4:
-            return .systemFont(ofSize: 17, weight: .semibold)
+            return .systemFont(ofSize: scaled(17), weight: .semibold)
         case .heading5:
-            return .systemFont(ofSize: 15, weight: .semibold)
+            return .systemFont(ofSize: scaled(15), weight: .semibold)
         case .heading6:
-            return .systemFont(ofSize: 13, weight: .semibold)
+            return .systemFont(ofSize: scaled(13), weight: .semibold)
         case .quote:
-            return .systemFont(ofSize: 18, weight: .regular)
+            return .systemFont(ofSize: scaled(18), weight: .regular)
         case .callout:
-            return .systemFont(ofSize: 15, weight: .regular)
+            return .systemFont(ofSize: scaled(15), weight: .regular)
         case .code, .math:
-            return .monospacedSystemFont(ofSize: 13.5, weight: .regular)
+            return .monospacedSystemFont(ofSize: scaled(13.5), weight: .regular)
         case .image:
-            return .systemFont(ofSize: 13, weight: .regular)
+            return .systemFont(ofSize: scaled(13), weight: .regular)
         case .divider, .table, .pdf, .mermaid:
-            return .systemFont(ofSize: 14, weight: .regular)
+            return .systemFont(ofSize: scaled(14), weight: .regular)
         }
     }
 
@@ -57,17 +85,21 @@ enum BlockTypography {
         }
     }
 
-    static func paragraphStyle(for type: BlockType, justified: Bool = false) -> NSParagraphStyle {
+    static func paragraphStyle(
+        for type: BlockType,
+        justified: Bool = false,
+        lineSpacing: CGFloat? = nil
+    ) -> NSParagraphStyle {
         let style = NSMutableParagraphStyle()
+        let spacing = lineSpacing ?? storedLineSpacing
+
         switch type {
         case .heading1, .heading2, .heading3, .heading4, .heading5, .heading6:
-            style.lineSpacing = 1
+            style.lineSpacing = min(spacing, 2)
         case .quote:
-            style.lineSpacing = 5
-        case .code:
-            style.lineSpacing = 4
+            style.lineSpacing = spacing + 1
         default:
-            style.lineSpacing = 4
+            style.lineSpacing = spacing
         }
 
         if justified {
@@ -84,18 +116,21 @@ enum BlockTypography {
     }
 
     static func minHeight(for type: BlockType) -> CGFloat {
+        let scale = textScale
+        let base: CGFloat
         switch type {
-        case .heading1: return 46
-        case .heading2: return 37
-        case .heading3: return 31
-        case .heading4: return 28
-        case .heading5: return 26
-        case .heading6: return 24
-        case .code: return 36
-        case .math: return 30
-        case .image: return 20
-        default: return 26
+        case .heading1: base = 46
+        case .heading2: base = 37
+        case .heading3: base = 31
+        case .heading4: base = 28
+        case .heading5: base = 26
+        case .heading6: base = 24
+        case .code: base = 36
+        case .math: base = 30
+        case .image: base = 20
+        default: base = 26
         }
+        return (base * scale).rounded()
     }
 
     static func topPadding(for type: BlockType) -> CGFloat {

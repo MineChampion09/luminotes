@@ -9,26 +9,34 @@ struct EditorView: View {
     @State private var blockFrames: [UUID: CGRect] = [:]
     @AppStorage("Luminotes.justifyText") private var justifyText = true
     @AppStorage("Luminotes.appearance") private var appearanceMode = "light"
+    @AppStorage(BlockTypography.bodyFontSizeKey) private var bodyFontSize = 16.0
+    @AppStorage("Luminotes.editorWidth") private var editorWidth = 872.0
+    @State private var scrollToBottomToken = UUID()
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         ZStack(alignment: .top) {
             Color.clear
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    titleField
-                    blockList
-                    addBlockSpace
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        titleField
+                        blockList
+                        addBlockSpace
+                    }
+                    .frame(maxWidth: editorWidth, alignment: .leading)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 52)
+                    .padding(.bottom, 60)
+                    .frame(maxWidth: .infinity, alignment: .center)
                 }
-                .frame(maxWidth: 872, alignment: .leading)
-                .padding(.horizontal, 16)
-                .padding(.top, 52)
-                .padding(.bottom, 60)
-                .frame(maxWidth: .infinity, alignment: .center)
+                .scrollIndicators(.hidden)
+                .id(viewModel.note.id)
+                .onChange(of: scrollToBottomToken) { _, _ in
+                    proxy.scrollTo("editorBottom", anchor: .bottom)
+                }
             }
-            .scrollIndicators(.hidden)
-            .id(viewModel.note.id)
 
             topBar
                 .padding(.leading, viewModel.isSidebarVisible ? 16 : 92)
@@ -38,6 +46,10 @@ struct EditorView: View {
         .ignoresSafeArea(.container, edges: .top)
         .coordinateSpace(name: "EditorViewport")
         .onPreferenceChange(BlockFramePreferenceKey.self) { frames in
+            // Frames are only needed to position the slash menu. Tracking them
+            // during ordinary scrolling makes every scroll tick re-render the
+            // whole editor, so ignore them unless the menu is open.
+            guard viewModel.slashMenu != nil else { return }
             blockFrames = frames
         }
         .overlay {
@@ -155,6 +167,18 @@ struct EditorView: View {
             .buttonStyle(.plain)
             .help(justifyText ? "Use left-aligned text" : "Justify text")
 
+            Button {
+                scrollToBottomToken = UUID()
+            } label: {
+                Image(systemName: "arrow.down.to.line")
+                    .font(.system(size: 11.5, weight: .medium))
+                    .foregroundStyle(Palette.secondaryText)
+                    .frame(width: 24, height: 22)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("Go to bottom")
+
             SaveStatusView(state: viewModel.saveState)
 
             fileActionsMenu
@@ -256,7 +280,7 @@ struct EditorView: View {
             axis: .vertical
         )
         .textFieldStyle(.plain)
-        .font(.system(size: 40, weight: .bold))
+        .font(.system(size: 40 * CGFloat(bodyFontSize / 16), weight: .bold))
         .foregroundStyle(Palette.primaryText)
         .lineLimit(1...3)
         .focused($titleFocused)
@@ -274,7 +298,8 @@ struct EditorView: View {
                 BlockRowView(
                     viewModel: viewModel,
                     block: block,
-                    number: viewModel.listNumber(for: block)
+                    number: viewModel.listNumber(for: block),
+                    tracksFrame: viewModel.slashMenu != nil
                 )
                 .id(block.id)
             }
@@ -312,6 +337,7 @@ struct EditorView: View {
     private var addBlockSpace: some View {
         Color.clear
             .frame(height: 36)
+            .id("editorBottom")
     }
 
 }

@@ -147,6 +147,10 @@ struct LuminotesApp: App {
                 }
             }
         }
+
+        Settings {
+            SettingsView()
+        }
     }
 
     private func applyAppearance() {

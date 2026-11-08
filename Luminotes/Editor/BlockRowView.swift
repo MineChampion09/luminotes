@@ -6,6 +6,7 @@ struct BlockRowView: View {
     @ObservedObject var viewModel: EditorViewModel
     let block: Block
     let number: Int?
+    var tracksFrame = true
 
     @State private var isHovering = false
 
@@ -37,14 +38,16 @@ struct BlockRowView: View {
                     .transition(.opacity)
             }
         }
-        .background(
-            GeometryReader { proxy in
-                Color.clear.preference(
-                    key: BlockFramePreferenceKey.self,
-                    value: [block.id: proxy.frame(in: .named("EditorViewport"))]
-                )
+        .background {
+            if tracksFrame {
+                GeometryReader { proxy in
+                    Color.clear.preference(
+                        key: BlockFramePreferenceKey.self,
+                        value: [block.id: proxy.frame(in: .named("EditorViewport"))]
+                    )
+                }
             }
-        )
+        }
         .contextMenu {
             Menu("Turn into") {
                 ForEach(BlockType.allCases.filter { $0 != .pdf }) { type in

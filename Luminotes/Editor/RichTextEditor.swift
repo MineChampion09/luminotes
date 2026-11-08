@@ -10,6 +10,8 @@ struct RichTextEditor: NSViewRepresentable {
     let placeholder: String
     let minHeight: CGFloat
     @AppStorage("Luminotes.justifyText") private var justifyText = true
+    @AppStorage(BlockTypography.bodyFontSizeKey) private var bodyFontSize = 16.0
+    @AppStorage(BlockTypography.lineSpacingKey) private var lineSpacing = 4.0
     @Environment(\.colorScheme) private var colorScheme
 
     func makeCoordinator() -> Coordinator {
@@ -48,12 +50,12 @@ struct RichTextEditor: NSViewRepresentable {
         }
 
         context.coordinator.attach(textView: textView, container: container)
-        context.coordinator.update(block: block, placeholder: placeholder, minHeight: minHeight, force: true, justified: justifyText, colorScheme: colorScheme)
+        context.coordinator.update(block: block, placeholder: placeholder, minHeight: minHeight, force: true, justified: justifyText, fontSize: bodyFontSize, lineSpacing: lineSpacing, colorScheme: colorScheme)
         return container
     }
 
     func updateNSView(_ container: BlockTextContainerView, context: Context) {
-        context.coordinator.update(block: block, placeholder: placeholder, minHeight: minHeight, force: false, justified: justifyText, colorScheme: colorScheme)
+        context.coordinator.update(block: block, placeholder: placeholder, minHeight: minHeight, force: false, justified: justifyText, fontSize: bodyFontSize, lineSpacing: lineSpacing, colorScheme: colorScheme)
     }
 
     func sizeThatFits(_ proposal: ProposedViewSize, nsView: BlockTextContainerView, context: Context) -> CGSize? {
@@ -75,6 +77,8 @@ struct RichTextEditor: NSViewRepresentable {
         private var lastMinHeight: CGFloat = 0
         private var lastBaseFont: NSFont?
         private var lastJustified = false
+        private var lastFontSize: Double = 0
+        private var lastLineSpacing: Double = 0
         private var lastColorScheme: ColorScheme?
         private var isProgrammaticUpdate = false
         private var handledFocusToken: UUID?
@@ -97,17 +101,23 @@ struct RichTextEditor: NSViewRepresentable {
             minHeight: CGFloat,
             force: Bool,
             justified: Bool,
+            fontSize: Double,
+            lineSpacing: Double,
             colorScheme: ColorScheme
         ) {
             guard let textView, let container else { return }
             blockID = block.id
             container.minimumHeight = minHeight
 
-            let baseFont = BlockTypography.font(for: block.type)
+            let baseFont = BlockTypography.font(
+                for: block.type,
+                bodyFontSize: CGFloat(fontSize)
+            )
             let textColor = BlockTypography.color(for: block.type)
             let paragraphStyle = BlockTypography.paragraphStyle(
                 for: block.type,
-                justified: justified
+                justified: justified,
+                lineSpacing: CGFloat(lineSpacing)
             )
             let fontChanged = lastBaseFont != baseFont
 
@@ -130,6 +140,8 @@ struct RichTextEditor: NSViewRepresentable {
                 lastPlaceholder != placeholder ||
                 abs(lastMinHeight - minHeight) > 0.5 ||
                 lastJustified != justified ||
+                lastFontSize != fontSize ||
+                lastLineSpacing != lineSpacing ||
                 lastColorScheme != colorScheme
 
             if needsTextUpdate {
@@ -161,6 +173,8 @@ struct RichTextEditor: NSViewRepresentable {
                 lastMinHeight = minHeight
                 lastBaseFont = baseFont
                 lastJustified = justified
+                lastFontSize = fontSize
+                lastLineSpacing = lineSpacing
                 lastColorScheme = colorScheme
 
                 if wasFirstResponder {
@@ -956,6 +970,9 @@ final class BlockTextView: NSTextView {
 final class BlockTextContainerView: NSView {
     let textView: BlockTextView
     var minimumHeight: CGFloat = 26
+    private var cachedHeight: CGFloat = 0
+    private var cachedWidth: CGFloat = 0
+    private var heightDirty = true
 
     init(textView: BlockTextView) {
         self.textView = textView
@@ -975,6 +992,11 @@ final class BlockTextContainerView: NSView {
         return NSSize(width: NSView.noIntrinsicMetric, height: requiredHeight(for: width))
     }
 
+    override func invalidateIntrinsicContentSize() {
+        heightDirty = true
+        super.invalidateIntrinsicContentSize()
+    }
+
     override func layout() {
         super.layout()
         let width = max(bounds.width, 1)
@@ -986,17 +1008,27 @@ final class BlockTextContainerView: NSView {
 
     func requiredHeight(for width: CGFloat) -> CGFloat {
         let safeWidth = max(width, 1)
+        if !heightDirty, abs(safeWidth - cachedWidth) < 0.5 {
+            return cachedHeight
+        }
+
         textView.frame.size.width = safeWidth
         textView.textContainer?.containerSize = NSSize(width: safeWidth, height: .greatestFiniteMagnitude)
         textView.textContainer?.widthTracksTextView = true
 
-        guard let layoutManager = textView.layoutManager,
-              let textContainer = textView.textContainer else {
-            return max(minimumHeight, textView.textContainerInset.height * 2 + 18)
+        let height: CGFloat
+        if let layoutManager = textView.layoutManager,
+           let textContainer = textView.textContainer {
+            layoutManager.ensureLayout(for: textContainer)
+            let used = layoutManager.usedRect(for: textContainer)
+            height = max(minimumHeight, ceil(used.height + textView.textContainerInset.height * 2))
+        } else {
+            height = max(minimumHeight, textView.textContainerInset.height * 2 + 18)
         }
 
-        layoutManager.ensureLayout(for: textContainer)
-        let used = layoutManager.usedRect(for: textContainer)
-        return max(minimumHeight, ceil(used.height + textView.textContainerInset.height * 2))
+        cachedWidth = safeWidth
+        cachedHeight = height
+        heightDirty = false
+        return height
     }
 }
