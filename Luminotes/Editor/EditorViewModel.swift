@@ -879,6 +879,56 @@ final class EditorViewModel: ObservableObject {
                 requestFocus(blockID, selection: cleanedText.utf16Count)
             }
 
+        case .pdf:
+            let panel = NSOpenPanel()
+            panel.title = "Choose a PDF"
+            panel.prompt = "Insert"
+            panel.allowedContentTypes = [.pdf]
+            panel.allowsMultipleSelection = false
+            panel.canChooseDirectories = false
+
+            guard panel.runModal() == .OK, let url = panel.url else {
+                mutateNote { $0.blocks[index].text = cleanedText }
+                return
+            }
+
+            guard let projectStore, let currentFileURL else {
+                let alert = NSAlert()
+                alert.messageText = "Open a project to insert a PDF"
+                alert.informativeText = "PDF blocks are copied into the project's attachment folder."
+                alert.runModal()
+                mutateNote { $0.blocks[index].text = cleanedText }
+                return
+            }
+
+            do {
+                let path = try projectStore.importFile(
+                    from: url,
+                    forNoteAt: currentFileURL,
+                    attachmentFolder: attachmentFolder
+                )
+                mutateNote { note in
+                    note.blocks[index].type = .pdf
+                    note.blocks[index].text = .empty
+                    note.blocks[index].pdfPath = path
+                    note.blocks[index].pdfPage = nil
+                    note.blocks[index].imageAsset = nil
+                    note.blocks[index].imagePath = nil
+                    note.blocks[index].table = nil
+                    note.blocks[index].checked = false
+                    note.blocks[index].collapsed = false
+                }
+                refreshProjectFiles()
+                _ = insertParagraph(after: blockID)
+            } catch {
+                let alert = NSAlert()
+                alert.messageText = "Could not import PDF"
+                alert.informativeText = error.localizedDescription
+                alert.runModal()
+                mutateNote { $0.blocks[index].text = cleanedText }
+            }
+            return
+
         case .duplicate:
             var copy = oldBlock
             copy.id = UUID()

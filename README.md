@@ -120,8 +120,9 @@ to `.ultraThinMaterial` and bordered buttons.
   stays visible.
 - Wiki links use `[[Note]]` or `[[Note|Alias]]`; ⌘-click opens the note.
 - Image embeds use `![[image.png]]`; PDF embeds use `![[file.pdf]]` and are
-  rendered inline with PDFKit. Use the expand button on a PDF to open the full
-  editor. Text boxes are stored in a custom `<pdf>.luminotes.json` sidecar, so
+  rendered inline with PDFKit. The slash menu's **PDF** item lets you choose and
+  embed a PDF directly; it is copied into the project's attachment folder. Use
+  the expand button on a PDF to open the full editor. Text boxes are stored in a custom `<pdf>.luminotes.json` sidecar, so
   they remain editable, movable, resizable, and styleable without changing the
   PDF itself. Their font, size, text color, and background color are edited in
   a popover so the page does not shift. Use `⌘Z` / `⇧⌘Z` to undo or redo

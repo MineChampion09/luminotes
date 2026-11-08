@@ -3,6 +3,7 @@ import Foundation
 struct SlashCommand: Identifiable, Equatable, Sendable {
     enum Kind: Equatable, Sendable {
         case turnInto(BlockType)
+        case pdf
         case duplicate
         case delete
     }
@@ -160,6 +161,15 @@ struct SlashCommand: Identifiable, Equatable, Sendable {
             group: "Media",
             keywords: ["photo", "picture", "media", "upload"],
             kind: .turnInto(.image)
+        ),
+        SlashCommand(
+            id: "pdf",
+            title: "PDF",
+            subtitle: "Embed a PDF document",
+            icon: "doc.richtext",
+            group: "Media",
+            keywords: ["pdf", "document", "file", "embed"],
+            kind: .pdf
         ),
         SlashCommand(
             id: "table",
