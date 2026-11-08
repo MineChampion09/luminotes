@@ -1,0 +1,15 @@
+{
+  "originHash" : "6186e0f1e0512c8a9b566d98a44ca1079f017be67961b3510303d4ce00582138",
+  "pins" : [
+    {
+      "identity" : "swiftui-math",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/gonzalezreal/swiftui-math",
+      "state" : {
+        "revision" : "0b5c2cfaaec8d6193db206f675048eeb5ce95f71",
+        "version" : "0.1.0"
+      }
+    }
+  ],
+  "version" : 3
+}

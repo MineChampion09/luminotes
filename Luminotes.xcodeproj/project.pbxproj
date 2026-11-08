@@ -1,0 +1,501 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B0000000000000000000001 /* LuminotesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000001 /* LuminotesApp.swift */; };
+		B0000000000000000000002 /* Block.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000002 /* Block.swift */; };
+		B0000000000000000000003 /* ProjectFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000003 /* ProjectFile.swift */; };
+		B0000000000000000000004 /* RichText.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000004 /* RichText.swift */; };
+		B0000000000000000000005 /* SlashCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000005 /* SlashCommand.swift */; };
+		B0000000000000000000006 /* BlockDropDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000006 /* BlockDropDelegate.swift */; };
+		B0000000000000000000007 /* BlockRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000007 /* BlockRowView.swift */; };
+		B0000000000000000000008 /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000008 /* EditorView.swift */; };
+		B0000000000000000000009 /* EditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000009 /* EditorViewModel.swift */; };
+		B000000000000000000000A /* MathBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000000000000000000A /* MathBlockView.swift */; };
+		B000000000000000000000B /* RichTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000000000000000000B /* RichTextEditor.swift */; };
+		B000000000000000000000C /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000000000000000000C /* RootView.swift */; };
+		B000000000000000000000D /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000000000000000000D /* SidebarView.swift */; };
+		B000000000000000000000E /* SlashCommandMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000000000000000000E /* SlashCommandMenuView.swift */; };
+		B000000000000000000000F /* MarkdownCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000000000000000000F /* MarkdownCodec.swift */; };
+		B0000000000000000000010 /* MarkdownParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000010 /* MarkdownParser.swift */; };
+		B0000000000000000000011 /* NoteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000011 /* NoteStore.swift */; };
+		B0000000000000000000012 /* ProjectStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000012 /* ProjectStore.swift */; };
+		B0000000000000000000013 /* LiquidGlass.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000013 /* LiquidGlass.swift */; };
+		B0000000000000000000014 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000014 /* Theme.swift */; };
+		B000000000000000000005A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F000000000000000000005A /* Assets.xcassets */; };
+		B0000000000000000000095 /* SwiftUIMath in Frameworks */ = {isa = PBXBuildFile; productRef = S0000000000000000000001 /* SwiftUIMath */; };
+		B0000000000000000000096 /* MathImageRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000096 /* MathImageRenderer.swift */; };
+		B0000000000000000000097 /* InlineMathEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000097 /* InlineMathEditorView.swift */; };
+		B0000000000000000000098 /* PDFBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000098 /* PDFBlockView.swift */; };
+		B0000000000000000000099 /* MermaidBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000099 /* MermaidBlockView.swift */; };
+		B000000000000000000009A /* pele.global.js in Resources */ = {isa = PBXBuildFile; fileRef = F000000000000000000009A /* pele.global.js */; };
+		B000000000000000000009B /* SourceTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000000000000000009B /* SourceTextEditor.swift */; };
+		B000000000000000000009C /* PDFEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000000000000000009C /* PDFEditorView.swift */; };
+		B000000000000000000009D /* PDFAnnotations.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000000000000000009D /* PDFAnnotations.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		F0000000000000000000098 /* PDFBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFBlockView.swift; sourceTree = "<group>"; };
+		F0000000000000000000099 /* MermaidBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MermaidBlockView.swift; sourceTree = "<group>"; };
+		F000000000000000000009A /* pele.global.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = pele.global.js; sourceTree = "<group>"; };
+		F000000000000000000009B /* SourceTextEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceTextEditor.swift; sourceTree = "<group>"; };
+		F000000000000000000009C /* PDFEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFEditorView.swift; sourceTree = "<group>"; };
+		F000000000000000000009D /* PDFAnnotations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFAnnotations.swift; sourceTree = "<group>"; };
+		F0000000000000000000097 /* InlineMathEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InlineMathEditorView.swift; sourceTree = "<group>"; };
+		F0000000000000000000096 /* MathImageRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MathImageRenderer.swift; sourceTree = "<group>"; };
+		F0000000000000000000001 /* LuminotesApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LuminotesApp.swift"; sourceTree = "<group>"; };
+		F0000000000000000000002 /* Block.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Block.swift"; sourceTree = "<group>"; };
+		F0000000000000000000003 /* ProjectFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProjectFile.swift"; sourceTree = "<group>"; };
+		F0000000000000000000004 /* RichText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RichText.swift"; sourceTree = "<group>"; };
+		F0000000000000000000005 /* SlashCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SlashCommand.swift"; sourceTree = "<group>"; };
+		F0000000000000000000006 /* BlockDropDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlockDropDelegate.swift"; sourceTree = "<group>"; };
+		F0000000000000000000007 /* BlockRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlockRowView.swift"; sourceTree = "<group>"; };
+		F0000000000000000000008 /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditorView.swift"; sourceTree = "<group>"; };
+		F0000000000000000000009 /* EditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditorViewModel.swift"; sourceTree = "<group>"; };
+		F000000000000000000000A /* MathBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MathBlockView.swift"; sourceTree = "<group>"; };
+		F000000000000000000000B /* RichTextEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RichTextEditor.swift"; sourceTree = "<group>"; };
+		F000000000000000000000C /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RootView.swift"; sourceTree = "<group>"; };
+		F000000000000000000000D /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SidebarView.swift"; sourceTree = "<group>"; };
+		F000000000000000000000E /* SlashCommandMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SlashCommandMenuView.swift"; sourceTree = "<group>"; };
+		F000000000000000000000F /* MarkdownCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MarkdownCodec.swift"; sourceTree = "<group>"; };
+		F0000000000000000000010 /* MarkdownParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MarkdownParser.swift"; sourceTree = "<group>"; };
+		F0000000000000000000011 /* NoteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NoteStore.swift"; sourceTree = "<group>"; };
+		F0000000000000000000012 /* ProjectStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProjectStore.swift"; sourceTree = "<group>"; };
+		F0000000000000000000013 /* LiquidGlass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LiquidGlass.swift"; sourceTree = "<group>"; };
+		F0000000000000000000014 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Theme.swift"; sourceTree = "<group>"; };
+		F000000000000000000005A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F000000000000000000005B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F000000000000000000005C /* Luminotes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Luminotes.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		P0000000000000000000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B0000000000000000000095 /* SwiftUIMath in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		G0000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				G0000000000000000000002 /* Luminotes */,
+				G0000000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		G0000000000000000000002 /* Luminotes */ = {
+			isa = PBXGroup;
+			children = (
+				F0000000000000000000001 /* LuminotesApp.swift */,
+				G000000000000000000000A /* Models */,
+				G000000000000000000000B /* Editor */,
+				G000000000000000000000C /* Persistence */,
+				G000000000000000000000D /* Support */,
+				G000000000000000000000E /* Resources */,
+				F000000000000000000005A /* Assets.xcassets */,
+				F000000000000000000005B /* Info.plist */,
+			);
+			path = Luminotes;
+			sourceTree = "<group>";
+		};
+		G000000000000000000000A /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				F0000000000000000000002 /* Block.swift */,
+				F0000000000000000000003 /* ProjectFile.swift */,
+				F0000000000000000000004 /* RichText.swift */,
+				F0000000000000000000005 /* SlashCommand.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		G000000000000000000000B /* Editor */ = {
+			isa = PBXGroup;
+			children = (
+				F0000000000000000000006 /* BlockDropDelegate.swift */,
+				F0000000000000000000007 /* BlockRowView.swift */,
+				F0000000000000000000008 /* EditorView.swift */,
+				F0000000000000000000009 /* EditorViewModel.swift */,
+				F000000000000000000000A /* MathBlockView.swift */,
+				F0000000000000000000099 /* MermaidBlockView.swift */,
+				F000000000000000000009B /* SourceTextEditor.swift */,
+				F000000000000000000009C /* PDFEditorView.swift */,
+				F000000000000000000009D /* PDFAnnotations.swift */,
+				F0000000000000000000098 /* PDFBlockView.swift */,
+				F0000000000000000000097 /* InlineMathEditorView.swift */,
+				F000000000000000000000B /* RichTextEditor.swift */,
+				F000000000000000000000C /* RootView.swift */,
+				F000000000000000000000D /* SidebarView.swift */,
+				F000000000000000000000E /* SlashCommandMenuView.swift */,
+			);
+			path = Editor;
+			sourceTree = "<group>";
+		};
+		G000000000000000000000C /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				F000000000000000000000F /* MarkdownCodec.swift */,
+				F0000000000000000000010 /* MarkdownParser.swift */,
+				F0000000000000000000011 /* NoteStore.swift */,
+				F0000000000000000000012 /* ProjectStore.swift */,
+			);
+			path = Persistence;
+			sourceTree = "<group>";
+		};
+		G000000000000000000000D /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				F0000000000000000000013 /* LiquidGlass.swift */,
+				F0000000000000000000096 /* MathImageRenderer.swift */,
+				F0000000000000000000014 /* Theme.swift */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+		G000000000000000000000E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F000000000000000000009A /* pele.global.js */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		G0000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F000000000000000000005C /* Luminotes.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		T0000000000000000000001 /* Luminotes */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = L0000000000000000000002 /* Build configuration list for PBXNativeTarget "Luminotes" */;
+			buildPhases = (
+				P0000000000000000000001 /* Sources */,
+				P0000000000000000000002 /* Frameworks */,
+				P0000000000000000000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			packageProductDependencies = (
+				S0000000000000000000001 /* SwiftUIMath */,
+			);
+			name = Luminotes;
+			productName = Luminotes;
+			productReference = F000000000000000000005C /* Luminotes.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		X0000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					T0000000000000000000001 = {
+						CreatedOnToolsVersion = 27.1;
+					};
+				};
+			};
+			buildConfigurationList = L0000000000000000000001 /* Build configuration list for PBXProject "Luminotes" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = G0000000000000000000001;
+			packageReferences = (
+				R0000000000000000000001 /* XCRemoteSwiftPackageReference "swiftui-math" */,
+			);
+			productRefGroup = G0000000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				T0000000000000000000001 /* Luminotes */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		P0000000000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B000000000000000000005A /* Assets.xcassets in Resources */,
+				B000000000000000000009A /* pele.global.js in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		P0000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B0000000000000000000001 /* LuminotesApp.swift in Sources */,
+				B0000000000000000000002 /* Block.swift in Sources */,
+				B0000000000000000000003 /* ProjectFile.swift in Sources */,
+				B0000000000000000000004 /* RichText.swift in Sources */,
+				B0000000000000000000005 /* SlashCommand.swift in Sources */,
+				B0000000000000000000006 /* BlockDropDelegate.swift in Sources */,
+				B0000000000000000000007 /* BlockRowView.swift in Sources */,
+				B0000000000000000000008 /* EditorView.swift in Sources */,
+				B0000000000000000000009 /* EditorViewModel.swift in Sources */,
+				B000000000000000000000A /* MathBlockView.swift in Sources */,
+				B0000000000000000000098 /* PDFBlockView.swift in Sources */,
+				B0000000000000000000099 /* MermaidBlockView.swift in Sources */,
+				B000000000000000000009B /* SourceTextEditor.swift in Sources */,
+				B000000000000000000009C /* PDFEditorView.swift in Sources */,
+				B000000000000000000009D /* PDFAnnotations.swift in Sources */,
+				B0000000000000000000097 /* InlineMathEditorView.swift in Sources */,
+				B000000000000000000000B /* RichTextEditor.swift in Sources */,
+				B000000000000000000000C /* RootView.swift in Sources */,
+				B000000000000000000000D /* SidebarView.swift in Sources */,
+				B000000000000000000000E /* SlashCommandMenuView.swift in Sources */,
+				B000000000000000000000F /* MarkdownCodec.swift in Sources */,
+				B0000000000000000000010 /* MarkdownParser.swift in Sources */,
+				B0000000000000000000011 /* NoteStore.swift in Sources */,
+				B0000000000000000000012 /* ProjectStore.swift in Sources */,
+				B0000000000000000000013 /* LiquidGlass.swift in Sources */,
+				B0000000000000000000096 /* MathImageRenderer.swift in Sources */,
+				B0000000000000000000014 /* Theme.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		R0000000000000000000001 /* XCRemoteSwiftPackageReference "swiftui-math" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/gonzalezreal/swiftui-math";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		S0000000000000000000001 /* SwiftUIMath */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = R0000000000000000000001 /* XCRemoteSwiftPackageReference "swiftui-math" */;
+			productName = SwiftUIMath;
+		};
+/* End XCSwiftPackageProductDependency section */
+
+/* Begin XCBuildConfiguration section */
+		C0000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		C0000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		C0000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Luminotes/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.luminotes.Luminotes;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		C0000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Luminotes/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.luminotes.Luminotes;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		L0000000000000000000001 /* Build configuration list for PBXProject "Luminotes" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C0000000000000000000001 /* Debug */,
+				C0000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		L0000000000000000000002 /* Build configuration list for PBXNativeTarget "Luminotes" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C0000000000000000000003 /* Debug */,
+				C0000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = X0000000000000000000001 /* Project object */;
+}

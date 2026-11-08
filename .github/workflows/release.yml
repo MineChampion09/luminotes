@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish
+    runs-on: macos-26
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: xcodebuild -version
+
+      - name: Build release
+        run: |
+          xcodebuild \
+            -project Luminotes.xcodeproj \
+            -scheme Luminotes \
+            -configuration Release \
+            -derivedDataPath .build-release \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package app
+        id: package
+        run: |
+          set -euo pipefail
+          APP=".build-release/Build/Products/Release/Luminotes.app"
+          TAG="${GITHUB_REF_NAME}"
+          ZIP="Luminotes-${TAG}.zip"
+          DMG="Luminotes-${TAG}.dmg"
+
+          test -d "$APP"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP"
+          hdiutil create -quiet -volname "Luminotes" -srcfolder "$APP" -ov -format UDZO "$DMG"
+
+          echo "zip=$ZIP" >> "$GITHUB_OUTPUT"
+          echo "dmg=$DMG" >> "$GITHUB_OUTPUT"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ steps.package.outputs.zip }}
+            ${{ steps.package.outputs.dmg }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
