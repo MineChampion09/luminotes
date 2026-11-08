@@ -19,7 +19,7 @@ struct SlashCommandMenuView: View {
             lastGroup = command.group
         }
 
-        return 8 + CGFloat(commands.count) * 45 + CGFloat(groupCount) * 22
+        return 8 + CGFloat(commands.count) * 40 + CGFloat(groupCount) * 22
     }
 
     private var commands: [SlashCommand] {
@@ -56,7 +56,7 @@ struct SlashCommandMenuView: View {
             header
 
             Divider()
-                .overlay(Palette.border)
+                .overlay(Palette.border.opacity(0.6))
 
             if commands.isEmpty {
                 emptyState
@@ -65,13 +65,12 @@ struct SlashCommandMenuView: View {
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 2) {
                             ForEach(groups, id: \.title) { group in
-                                Text(group.title.uppercased())
-                                    .font(.system(size: 10, weight: .semibold))
-                                    .tracking(0.7)
+                                Text(group.title)
+                                    .font(.system(size: 10.5, weight: .medium))
                                     .foregroundStyle(Palette.tertiaryText)
                                     .padding(.horizontal, 10)
-                                    .padding(.top, 9)
-                                    .padding(.bottom, 3)
+                                    .padding(.top, 8)
+                                    .padding(.bottom, 2)
 
                                 ForEach(group.commands, id: \.command.id) { item in
                                     commandRow(item.command, index: item.index)
@@ -94,38 +93,38 @@ struct SlashCommandMenuView: View {
             }
 
             Divider()
-                .overlay(Palette.border)
+                .overlay(Palette.border.opacity(0.6))
 
-            HStack(spacing: 12) {
+            HStack(spacing: 10) {
                 Text("↑↓ Navigate")
                 Text("↵ Select")
                 Text("esc Close")
                 Spacer(minLength: 0)
             }
-            .font(.system(size: 10.5, weight: .medium))
+            .font(.system(size: 10, weight: .regular))
             .foregroundStyle(Palette.tertiaryText)
             .padding(.horizontal, 12)
             .frame(height: 29)
         }
         .frame(width: 326)
-        .background(Palette.menu.opacity(0.72))
-        .glassPanel(cornerRadius: 10)
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .glassPanel(cornerRadius: 12, tint: Palette.sidebarTint)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .shadow(color: Color.black.opacity(0.16), radius: 18, x: 0, y: 8)
     }
 
     private var header: some View {
-        HStack {
-            Text("Blocks")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(Palette.primaryText)
-            Spacer()
-            if !menu.query.isEmpty {
-                Text("/\(menu.query)")
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .foregroundStyle(Palette.secondaryText)
-                    .lineLimit(1)
-            }
+        HStack(spacing: 7) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 11, weight: .medium))
+
+            Text(menu.query.isEmpty ? "Search blocks" : menu.query)
+                .font(.system(size: 11.5, weight: .medium))
+                .foregroundStyle(menu.query.isEmpty ? Palette.tertiaryText : Palette.primaryText)
+                .lineLimit(1)
+
+            Spacer(minLength: 0)
         }
+        .foregroundStyle(Palette.tertiaryText)
         .padding(.horizontal, 12)
         .frame(height: 34)
     }
@@ -156,14 +155,10 @@ struct SlashCommandMenuView: View {
             viewModel.chooseSlashCommand(command)
         } label: {
             HStack(spacing: 10) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .fill(isSelected ? Color.accentColor.opacity(0.14) : Palette.hover)
-                        .frame(width: 30, height: 30)
-                    Image(systemName: command.icon)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(isSelected ? Color.accentColor : Palette.secondaryText)
-                }
+                Image(systemName: command.icon)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(isSelected ? Palette.primaryText : Palette.secondaryText)
+                    .frame(width: 20, alignment: .center)
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(command.title)
@@ -179,16 +174,20 @@ struct SlashCommandMenuView: View {
 
                 if isSelected {
                     Image(systemName: "return")
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(.system(size: 9.5, weight: .medium))
                         .foregroundStyle(Palette.tertiaryText)
                 }
             }
-            .padding(.horizontal, 7)
-            .frame(height: 43)
+            .padding(.horizontal, 8)
+            .frame(height: 38)
             .contentShape(Rectangle())
             .background(
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .fill(isSelected ? Color.accentColor.opacity(0.1) : (isHovered ? Palette.hover : Color.clear))
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(
+                        isSelected
+                            ? Palette.selection
+                            : (isHovered ? Palette.hover : Color.clear)
+                    )
             )
         }
         .buttonStyle(.plain)

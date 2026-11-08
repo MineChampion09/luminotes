@@ -135,9 +135,7 @@ struct BlockRowView: View {
                 TableOptionsMenu(viewModel: viewModel, block: block)
             }
 
-            Image(systemName: "line.3.horizontal")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(Palette.tertiaryText)
+            SixDotHandle()
                 .frame(width: 16, height: 24)
                 .contentShape(Rectangle())
                 .onDrag {
@@ -862,6 +860,22 @@ private struct TableOptionsMenu: View {
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
         .help("Table options")
+    }
+}
+
+private struct SixDotHandle: View {
+    var body: some View {
+        VStack(spacing: 2.4) {
+            ForEach(0..<3, id: \.self) { _ in
+                HStack(spacing: 2.4) {
+                    Circle()
+                        .frame(width: 2.5, height: 2.5)
+                    Circle()
+                        .frame(width: 2.5, height: 2.5)
+                }
+            }
+        }
+        .foregroundStyle(Palette.secondaryText)
     }
 }
 
