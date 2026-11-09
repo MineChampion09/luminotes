@@ -1,5 +1,4 @@
 import AppKit
-import PDFKit
 import SwiftUI
 
 // MARK: - Pills
@@ -168,58 +167,6 @@ private struct EmptyPill: View {
         Text("—")
             .font(.system(size: 10.5))
             .foregroundStyle(Palette.tertiaryText)
-    }
-}
-
-// MARK: - Cover
-
-struct DatabaseCoverView: View {
-    let row: DatabaseRow
-
-    @State private var image: NSImage?
-    @State private var didLoad = false
-
-    var body: some View {
-        ZStack {
-            if let image {
-                Image(nsImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            } else {
-                Palette.hover
-                Image(systemName: row.icon)
-                    .font(.system(size: 26, weight: .light))
-                    .foregroundStyle(Palette.tertiaryText)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 96)
-        .clipped()
-        .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 7, style: .continuous)
-                .stroke(Palette.border.opacity(0.6), lineWidth: 0.7)
-        )
-        .task(id: row.url) {
-            guard !didLoad || image == nil else { return }
-            didLoad = true
-            image = Self.loadImage(for: row)
-        }
-    }
-
-    private static func loadImage(for row: DatabaseRow) -> NSImage? {
-        if row.isImage {
-            return NSImage(contentsOf: row.url)
-        }
-        if row.isPDF,
-           let document = PDFDocument(url: row.url),
-           let page = document.page(at: 0) {
-            return page.thumbnail(
-                of: CGSize(width: 480, height: 300),
-                for: .mediaBox
-            )
-        }
-        return nil
     }
 }
 

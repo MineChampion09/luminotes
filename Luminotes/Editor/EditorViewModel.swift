@@ -1165,7 +1165,7 @@ final class EditorViewModel: ObservableObject {
         guard let index = note.blocks.firstIndex(where: { $0.id == blockID }) else { return }
         mutateNote { note in
             note.blocks[index].databasePath = path
-            note.blocks[index].databaseViewID = DatabaseLayout.table.rawValue
+            note.blocks[index].databaseViewID = DatabaseLayout.list.rawValue
         }
     }
 

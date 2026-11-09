@@ -120,12 +120,14 @@ Any folder can be used as a Notion-style database. A folder becomes a database
 only when a **Database** block is inserted into a note and pointed at it; other
 folders stay normal folders in the sidebar.
 
-- Insert a database with `/database`, then choose a folder. The block header
-  switches between **Table**, **Board**, **List**, and **Gallery** layouts.
+- Insert a database with `/database`, then choose a folder. New databases start
+  with a single **List** view; add **Table** or **Board** views as needed.
 - Direct children of the folder become rows. A database setting chooses whether
   rows are **Notes**, **Assets**, or **All files**.
 - Clicking a note row opens it. Clicking an asset row opens it in its default app.
   **New page** creates a Markdown row in the folder.
+- The search button in the header shows a search field that filters rows by title
+  and property values; hide it again with the same button.
 - Properties are edited inline. The settings panel adds properties, chooses which
   properties are visible, sorts, groups boards by a select property, and filters
   rows. Board cards can be dragged between columns.

@@ -174,10 +174,10 @@ struct SlashCommand: Identifiable, Equatable, Sendable {
         SlashCommand(
             id: "database",
             title: "Database",
-            subtitle: "View a folder as a table, board, list, or gallery",
+            subtitle: "View a folder as a table, board, or list",
             icon: "rectangle.3.group",
             group: "Media",
-            keywords: ["database", "db", "table", "board", "gallery", "folder"],
+            keywords: ["database", "db", "table", "board", "list", "folder"],
             kind: .turnInto(.database)
         ),
         SlashCommand(

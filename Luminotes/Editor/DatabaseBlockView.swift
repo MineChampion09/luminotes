@@ -18,6 +18,9 @@ struct DatabaseBlockView: View {
     @State private var renameText = ""
     @State private var newRowGroupValue: String?
     @State private var dropTargetColumn: String?
+    @State private var showingSearch = false
+    @State private var searchText = ""
+    @FocusState private var searchFocused: Bool
 
     private var currentView: DatabaseView? {
         guard let config else { return nil }
@@ -66,6 +69,9 @@ struct DatabaseBlockView: View {
     private func databaseView(config: DatabaseConfig, folderURL: URL) -> some View {
         VStack(spacing: 0) {
             header(config: config, folderURL: folderURL)
+            if showingSearch {
+                searchBar(config: config)
+            }
             if hasActiveOptions(config) {
                 optionsBar(config: config)
             }
@@ -96,6 +102,27 @@ struct DatabaseBlockView: View {
                 }
 
                 Spacer(minLength: 12)
+
+                Button {
+                    showingSearch.toggle()
+                    if !showingSearch {
+                        searchText = ""
+                    }
+                } label: {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(
+                            showingSearch ? Palette.primaryText : Palette.secondaryText
+                        )
+                        .frame(width: 26, height: 26)
+                        .glassPanel(
+                            cornerRadius: 6,
+                            tint: showingSearch ? Palette.selection : nil
+                        )
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help(showingSearch ? "Hide search" : "Search rows")
 
                 Button {
                     newRowGroupValue = nil
@@ -203,6 +230,63 @@ struct DatabaseBlockView: View {
         }
     }
 
+    private func searchBar(config: DatabaseConfig) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 10.5))
+                .foregroundStyle(Palette.tertiaryText)
+
+            TextField("Search rows…", text: $searchText)
+                .textFieldStyle(.plain)
+                .font(.system(size: 11.5))
+                .foregroundStyle(Palette.primaryText)
+                .focused($searchFocused)
+
+            if !searchText.isEmpty {
+                Text("\(searchResultCount(config: config)) results")
+                    .font(.system(size: 9.5, weight: .medium))
+                    .foregroundStyle(Palette.tertiaryText)
+
+                Button {
+                    searchText = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 10))
+                        .foregroundStyle(Palette.tertiaryText)
+                }
+                .buttonStyle(.plain)
+            }
+
+            Button {
+                showingSearch = false
+                searchText = ""
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundStyle(Palette.tertiaryText)
+                    .frame(width: 18, height: 18)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("Hide search")
+        }
+        .padding(.horizontal, 10)
+        .frame(height: 32)
+        .glassPanel(cornerRadius: 8)
+        .padding(.horizontal, 11)
+        .padding(.bottom, 7)
+        .onAppear {
+            DispatchQueue.main.async {
+                searchFocused = true
+            }
+        }
+    }
+
+    private func searchResultCount(config: DatabaseConfig) -> Int {
+        let view = config.view(for: block.databaseViewID)
+        return filteredRows(rows, view: view, config: config).count
+    }
+
     private func optionsBar(config: DatabaseConfig) -> some View {
         let view = config.view(for: block.databaseViewID)
 
@@ -286,8 +370,6 @@ struct DatabaseBlockView: View {
                 boardContent(rows: sorted, properties: properties, config: config)
             case .list:
                 listContent(rows: sorted, properties: properties, config: config)
-            case .gallery:
-                galleryContent(rows: sorted, properties: properties, config: config)
             }
         }
     }
@@ -685,32 +767,6 @@ struct DatabaseBlockView: View {
         )
     }
 
-    // MARK: - Gallery
-
-    private func galleryContent(
-        rows: [DatabaseRow],
-        properties: [DatabaseProperty],
-        config: DatabaseConfig
-    ) -> some View {
-        ScrollView(.vertical, showsIndicators: true) {
-            LazyVGrid(
-                columns: [GridItem(.adaptive(minimum: 200), spacing: 12)],
-                spacing: 12
-            ) {
-                ForEach(rows) { row in
-                    DatabaseGalleryCard(
-                        row: row,
-                        properties: properties,
-                        config: config,
-                        onOpen: { viewModel.openDatabaseRow(row) }
-                    )
-                }
-            }
-            .padding(12)
-        }
-        .frame(maxHeight: 460)
-    }
-
     // MARK: - Empty and error states
 
     private var emptyDatabaseView: some View {
@@ -745,10 +801,11 @@ struct DatabaseBlockView: View {
             Text("No rows match this view")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(Palette.primaryText)
-            Text("Adjust the filters or clear them to see every page.")
+            Text("Adjust the search or filters to see more pages.")
                 .font(.system(size: 10.5))
                 .foregroundStyle(Palette.secondaryText)
-            Button("Clear filters") {
+            Button("Clear search and filters") {
+                searchText = ""
                 mutateView {
                     $0.filters.removeAll()
                 }
@@ -809,7 +866,7 @@ struct DatabaseBlockView: View {
             Text("Database")
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(Palette.primaryText)
-            Text("Turn a project folder into a table, board, list, or gallery.")
+            Text("Turn a project folder into a table, board, or list.")
                 .font(.system(size: 10.5))
                 .foregroundStyle(Palette.secondaryText)
                 .multilineTextAlignment(.center)
@@ -1137,12 +1194,30 @@ struct DatabaseBlockView: View {
         view: DatabaseView,
         config: DatabaseConfig
     ) -> [DatabaseRow] {
-        guard !view.filters.isEmpty else { return rows }
-        return rows.filter { row in
-            view.filters.allSatisfy { filter in
-                DatabaseStore.matches(row, filter: filter, config: config)
+        var result = rows
+
+        if !view.filters.isEmpty {
+            result = result.filter { row in
+                view.filters.allSatisfy { filter in
+                    DatabaseStore.matches(row, filter: filter, config: config)
+                }
             }
         }
+
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !query.isEmpty {
+            result = result.filter { row in
+                if row.title.localizedCaseInsensitiveContains(query) {
+                    return true
+                }
+                return config.properties.contains { property in
+                    row.displayValue(for: property, config: config)
+                        .localizedCaseInsensitiveContains(query)
+                }
+            }
+        }
+
+        return result
     }
 
     private func sortedRows(
@@ -1479,70 +1554,6 @@ private struct DatabaseListRow: View {
             Rectangle()
                 .fill(Palette.border.opacity(0.4))
                 .frame(height: 0.6)
-        }
-    }
-}
-
-// MARK: - Gallery card
-
-private struct DatabaseGalleryCard: View {
-    let row: DatabaseRow
-    let properties: [DatabaseProperty]
-    let config: DatabaseConfig
-    let onOpen: () -> Void
-
-    @State private var isHovering = false
-
-    private var pills: [DatabaseProperty] {
-        properties.filter { $0.type != .title }
-    }
-
-    var body: some View {
-        Button(action: onOpen) {
-            VStack(alignment: .leading, spacing: 8) {
-                DatabaseCoverView(row: row)
-
-                Text(row.title)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Palette.primaryText)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-
-                if !pills.isEmpty {
-                    VStack(alignment: .leading, spacing: 3) {
-                        ForEach(pills.prefix(2)) { property in
-                            HStack(spacing: 5) {
-                                Text(property.name)
-                                    .font(.system(size: 8.5, weight: .medium))
-                                    .foregroundStyle(Palette.tertiaryText)
-                                    .frame(width: 48, alignment: .leading)
-                                DatabasePropertyPill(
-                                    property: property,
-                                    row: row,
-                                    config: config,
-                                    compact: true
-                                )
-                                Spacer(minLength: 0)
-                            }
-                        }
-                    }
-                }
-            }
-            .padding(9)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .glassPanel(cornerRadius: 10)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(Palette.border.opacity(0.55), lineWidth: 0.7)
-            )
-        }
-        .buttonStyle(.plain)
-        .onHover { isHovering = $0 }
-        .contextMenu {
-            Button("Open") { onOpen() }
-            Button("Show in Finder") {
-                NSWorkspace.shared.activateFileViewerSelecting([row.url])
-            }
         }
     }
 }

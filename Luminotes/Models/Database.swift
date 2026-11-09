@@ -104,11 +104,10 @@ struct DatabaseProperty: Identifiable, Codable, Equatable, Hashable, Sendable {
     }
 }
 
-enum DatabaseLayout: String, Codable, CaseIterable, Identifiable, Sendable {
+enum DatabaseLayout: String, CaseIterable, Identifiable, Sendable {
     case table
     case board
     case list
-    case gallery
 
     var id: String { rawValue }
 
@@ -117,7 +116,6 @@ enum DatabaseLayout: String, Codable, CaseIterable, Identifiable, Sendable {
         case .table: return "Table"
         case .board: return "Board"
         case .list: return "List"
-        case .gallery: return "Gallery"
         }
     }
 
@@ -126,8 +124,32 @@ enum DatabaseLayout: String, Codable, CaseIterable, Identifiable, Sendable {
         case .table: return "tablecells"
         case .board: return "rectangle.3.group"
         case .list: return "list.bullet"
-        case .gallery: return "square.grid.2x2"
         }
+    }
+}
+
+extension DatabaseLayout: Codable {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        // Older configs may contain gallery views. Treat them as list views
+        // now that the gallery layout has been removed.
+        if raw == "gallery" {
+            self = .list
+            return
+        }
+        guard let value = DatabaseLayout(rawValue: raw) else {
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Unknown database layout: \(raw)"
+            )
+        }
+        self = value
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
     }
 }
 
@@ -392,29 +414,10 @@ struct DatabaseConfig: Codable, Equatable, Sendable {
             properties: [title, status, type, modified],
             views: [
                 DatabaseView(
-                    id: DatabaseLayout.table.rawValue,
-                    name: "Table",
-                    layout: .table,
-                    visiblePropertyIDs: ["title", "status", "fileType", "modifiedAt"]
-                ),
-                DatabaseView(
-                    id: DatabaseLayout.board.rawValue,
-                    name: "Board",
-                    layout: .board,
-                    visiblePropertyIDs: ["title", "status"],
-                    groupPropertyID: "status"
-                ),
-                DatabaseView(
                     id: DatabaseLayout.list.rawValue,
                     name: "List",
                     layout: .list,
-                    visiblePropertyIDs: ["title", "status", "fileType"]
-                ),
-                DatabaseView(
-                    id: DatabaseLayout.gallery.rawValue,
-                    name: "Gallery",
-                    layout: .gallery,
-                    visiblePropertyIDs: ["title", "status"]
+                    visiblePropertyIDs: ["title", "status", "fileType", "modifiedAt"]
                 )
             ]
         )
@@ -539,9 +542,28 @@ enum DatabaseStore {
 
     static func loadConfig(for folderURL: URL) -> DatabaseConfig {
         guard let data = try? Data(contentsOf: configURL(for: folderURL)),
-              let config = try? JSONDecoder().decode(DatabaseConfig.self, from: data) else {
+              var config = try? JSONDecoder().decode(DatabaseConfig.self, from: data) else {
             return .defaultConfig()
         }
+
+        // Gallery was removed as a layout. Old configs decode it as a list
+        // view named "Gallery"; drop it when other views exist, or rename it
+        // when it is the only view.
+        let legacyGalleryIndices = config.views.indices.filter {
+            config.views[$0].name.caseInsensitiveCompare("Gallery") == .orderedSame
+                && config.views[$0].layout == .list
+        }
+        if !legacyGalleryIndices.isEmpty {
+            if config.views.count > 1 {
+                config.views.removeAll {
+                    $0.name.caseInsensitiveCompare("Gallery") == .orderedSame
+                        && $0.layout == .list
+                }
+            } else if let index = legacyGalleryIndices.first {
+                config.views[index].name = "List"
+            }
+        }
+
         return config
     }
 
