@@ -36,7 +36,7 @@ struct ImageViewer: View {
                     .frame(width: 24, height: 24)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .help("Close")
 
             Text(title)
@@ -54,7 +54,7 @@ struct ImageViewer: View {
                         .frame(width: 24, height: 24)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .help("Zoom out")
 
                 Button {
@@ -66,7 +66,7 @@ struct ImageViewer: View {
                         .frame(width: 30, height: 24)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .help("Fit image")
 
                 Button {
@@ -76,7 +76,7 @@ struct ImageViewer: View {
                         .frame(width: 24, height: 24)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .help("Zoom in")
             }
             .font(.system(size: 11, weight: .medium))

@@ -203,7 +203,7 @@ struct DatabaseFilterChip: View {
                     .frame(width: 12, height: 12)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .foregroundStyle(Palette.tertiaryText)
         }
         .foregroundStyle(Palette.secondaryText)
@@ -236,7 +236,7 @@ struct DatabaseSortChip: View {
                     .frame(width: 12, height: 12)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .foregroundStyle(Palette.tertiaryText)
         }
         .foregroundStyle(Palette.secondaryText)
@@ -269,7 +269,7 @@ struct DatabaseGroupChip: View {
                     .frame(width: 12, height: 12)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .foregroundStyle(Palette.tertiaryText)
         }
         .foregroundStyle(Palette.secondaryText)
@@ -358,7 +358,7 @@ struct DatabaseCellView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
 
         case .checkbox:
             Button {
@@ -375,7 +375,7 @@ struct DatabaseCellView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
 
         case .select:
             Menu {
@@ -407,6 +407,7 @@ struct DatabaseCellView: View {
                 .contentShape(Rectangle())
             }
             .menuStyle(.borderlessButton)
+            .pointingHandCursor()
             .menuIndicator(.hidden)
 
         case .multiSelect:
@@ -450,6 +451,7 @@ struct DatabaseCellView: View {
                 .contentShape(Rectangle())
             }
             .menuStyle(.borderlessButton)
+            .pointingHandCursor()
             .menuIndicator(.hidden)
 
         case .date:
@@ -473,7 +475,7 @@ struct DatabaseCellView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .popover(isPresented: $showingDatePicker, arrowEdge: .bottom) {
                 datePopover
             }
@@ -500,7 +502,7 @@ struct DatabaseCellView: View {
                             .font(.system(size: 9.5))
                             .foregroundStyle(Palette.tertiaryText)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.plainPointer)
                     .help("Open link")
                 }
             }
@@ -575,7 +577,7 @@ struct DatabaseCellView: View {
                     onSetValue("")
                     showingDatePicker = false
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .foregroundStyle(Palette.secondaryText)
                 Spacer()
                 Button("Done") {

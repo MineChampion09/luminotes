@@ -150,10 +150,10 @@ struct EditorView: View {
                 .frame(width: 34, height: 30)
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plainPointer)
         .glassPanel(cornerRadius: 10)
         .padding(.leading, viewModel.isSidebarVisible ? 16 : 92)
-        .padding(.top, 58)
+        .padding(.top, 54)
         .help("Back to database")
     }
 
@@ -170,7 +170,7 @@ struct EditorView: View {
                     .frame(width: 24, height: 22)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .help("Toggle sidebar")
 
             breadcrumb
@@ -185,7 +185,7 @@ struct EditorView: View {
                     .frame(width: 24, height: 22)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .help(isDark ? "Switch to light mode" : "Switch to dark mode")
             .contextMenu {
                 Button("Use System Appearance") {
@@ -202,7 +202,7 @@ struct EditorView: View {
                     .frame(width: 24, height: 22)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .help(justifyText ? "Use left-aligned text" : "Justify text")
 
             Button {
@@ -214,7 +214,7 @@ struct EditorView: View {
                     .frame(width: 24, height: 22)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .help("Go to bottom")
 
             SaveStatusView(state: viewModel.saveState)
@@ -304,6 +304,7 @@ struct EditorView: View {
                 .contentShape(Rectangle())
         }
         .menuStyle(.borderlessButton)
+        .pointingHandCursor()
         .menuIndicator(.hidden)
         .help("Note actions")
     }

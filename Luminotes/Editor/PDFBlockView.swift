@@ -88,7 +88,7 @@ struct PDFBlockView: View {
                             .frame(width: 18, height: 20)
                             .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.plainPointer)
                     .disabled(currentPage <= 1)
 
                     Text("\(currentPage) / \(document.pageCount)")
@@ -104,7 +104,7 @@ struct PDFBlockView: View {
                             .frame(width: 18, height: 20)
                             .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.plainPointer)
                     .disabled(currentPage >= document.pageCount)
                 }
                 .foregroundStyle(Palette.secondaryText)
@@ -120,7 +120,7 @@ struct PDFBlockView: View {
                         .frame(width: 22, height: 20)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .help("Open PDF editor")
 
                 Button("Open") {
@@ -128,7 +128,7 @@ struct PDFBlockView: View {
                         NSWorkspace.shared.open(fileURL)
                     }
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .font(.system(size: 10.5, weight: .medium))
                 .foregroundStyle(Palette.secondaryText)
             }

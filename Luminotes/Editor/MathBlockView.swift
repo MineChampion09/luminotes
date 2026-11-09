@@ -133,7 +133,7 @@ struct MathBlockView: View {
                     isEditing = false
                     refreshImage()
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .foregroundStyle(Palette.secondaryText)
 
                 Button("Done") {

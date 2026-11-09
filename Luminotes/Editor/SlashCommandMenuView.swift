@@ -190,7 +190,7 @@ struct SlashCommandMenuView: View {
                     )
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plainPointer)
         .onHover { hovering in
             hoveredID = hovering ? command.id : nil
         }

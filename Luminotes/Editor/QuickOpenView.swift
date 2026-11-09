@@ -93,7 +93,7 @@ struct QuickOpenView: View {
                         .font(.system(size: 12))
                         .foregroundStyle(Palette.tertiaryText)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .help("Clear search")
             }
         }
@@ -115,7 +115,7 @@ struct QuickOpenView: View {
                                 isSelected: index == safeSelectedIndex
                             )
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.plainPointer)
                         .onHover { hovering in
                             if hovering {
                                 selectedIndex = index

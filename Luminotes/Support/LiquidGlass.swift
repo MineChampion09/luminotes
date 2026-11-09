@@ -1,6 +1,140 @@
 import AppKit
 import SwiftUI
 
+// MARK: - Cursor feedback
+
+struct PointingHandCursorModifier: ViewModifier {
+    @State private var pushed = false
+
+    func body(content: Content) -> some View {
+        content
+            .onHover { inside in
+                if inside, !pushed {
+                    NSCursor.pointingHand.push()
+                    pushed = true
+                } else if !inside, pushed {
+                    NSCursor.pop()
+                    pushed = false
+                }
+            }
+            .onDisappear {
+                if pushed {
+                    NSCursor.pop()
+                    pushed = false
+                }
+            }
+    }
+}
+
+struct OpenHandCursorModifier: ViewModifier {
+    @State private var pushed = false
+
+    func body(content: Content) -> some View {
+        content
+            .onHover { inside in
+                if inside, !pushed {
+                    NSCursor.openHand.push()
+                    pushed = true
+                } else if !inside, pushed {
+                    NSCursor.pop()
+                    pushed = false
+                }
+            }
+            .onDisappear {
+                if pushed {
+                    NSCursor.pop()
+                    pushed = false
+                }
+            }
+    }
+}
+
+extension View {
+    func pointingHandCursor() -> some View {
+        modifier(PointingHandCursorModifier())
+    }
+
+    func openHandCursor() -> some View {
+        modifier(OpenHandCursorModifier())
+    }
+}
+
+struct LiquidGlassButtonStyle: ButtonStyle {
+    var prominent: Bool = false
+    @Environment(\.isEnabled) private var isEnabled
+
+    @ViewBuilder
+    func makeBody(configuration: Configuration) -> some View {
+        let base = configuration.label
+            .font(.system(size: 11.5, weight: .medium))
+            .foregroundStyle(prominent ? Color.white : Palette.primaryText)
+            .padding(.horizontal, 10)
+            .frame(height: 26)
+            .opacity(configuration.isPressed ? 0.78 : (isEnabled ? 1 : 0.45))
+            .contentShape(Rectangle())
+
+        let styled = Group {
+            if prominent {
+                base.background(
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .fill(Palette.accent)
+                )
+            } else {
+                base.glassPanel(cornerRadius: 7)
+            }
+        }
+        .allowsHitTesting(isEnabled)
+
+        if isEnabled {
+            styled.pointingHandCursor()
+        } else {
+            styled
+        }
+    }
+}
+
+struct PlainPointerButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    @ViewBuilder
+    func makeBody(configuration: Configuration) -> some View {
+        let base = configuration.label
+            .contentShape(Rectangle())
+            .opacity(configuration.isPressed ? 0.72 : (isEnabled ? 1 : 0.45))
+
+        if isEnabled {
+            base.pointingHandCursor()
+        } else {
+            base
+        }
+    }
+}
+
+struct PlainGrabButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    @ViewBuilder
+    func makeBody(configuration: Configuration) -> some View {
+        let base = configuration.label
+            .contentShape(Rectangle())
+            .opacity(configuration.isPressed ? 0.72 : (isEnabled ? 1 : 0.45))
+
+        if isEnabled {
+            base.openHandCursor()
+        } else {
+            base
+        }
+    }
+}
+
+extension ButtonStyle where Self == PlainPointerButtonStyle {
+    static var plainPointer: PlainPointerButtonStyle { PlainPointerButtonStyle() }
+}
+
+extension ButtonStyle where Self == PlainGrabButtonStyle {
+    static var plainGrab: PlainGrabButtonStyle { PlainGrabButtonStyle() }
+}
+
 struct WindowGlassBackground: View {
     var body: some View {
         ZStack {
@@ -114,16 +248,6 @@ extension View {
 
     @ViewBuilder
     func glassButtonStyle(prominent: Bool = false) -> some View {
-        if #available(macOS 26.0, *) {
-            if prominent {
-                self.buttonStyle(.glassProminent)
-            } else {
-                self.buttonStyle(.glass)
-            }
-        } else if prominent {
-            self.buttonStyle(.borderedProminent)
-        } else {
-            self.buttonStyle(.bordered)
-        }
+        self.buttonStyle(LiquidGlassButtonStyle(prominent: prominent))
     }
 }

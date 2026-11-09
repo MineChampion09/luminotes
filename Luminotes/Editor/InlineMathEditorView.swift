@@ -57,7 +57,7 @@ struct InlineMathEditorView: View {
                 Button("Cancel") {
                     onCancel()
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .foregroundStyle(Palette.secondaryText)
 
                 Button("Done") {

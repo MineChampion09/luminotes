@@ -116,7 +116,7 @@ private struct ProjectEmptyView: View {
                         .frame(width: 34, height: 34)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .glassPanel(cornerRadius: 17)
                 .padding(.leading, 24)
                 .padding(.top, 28)

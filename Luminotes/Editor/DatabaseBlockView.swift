@@ -121,7 +121,7 @@ struct DatabaseBlockView: View {
                         )
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .help(showingSearch ? "Hide search" : "Search rows")
 
                 Button {
@@ -145,7 +145,7 @@ struct DatabaseBlockView: View {
                         .glassPanel(cornerRadius: 6)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .help("Database settings")
             }
             .padding(.horizontal, 11)
@@ -180,6 +180,7 @@ struct DatabaseBlockView: View {
                         .contentShape(Rectangle())
                 }
                 .menuStyle(.borderlessButton)
+                .pointingHandCursor()
                 .menuIndicator(.hidden)
                 .fixedSize()
                 .help("Add view")
@@ -214,7 +215,7 @@ struct DatabaseBlockView: View {
             )
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plainPointer)
         .contextMenu {
             Button("Rename…") {
                 beginRename(item)
@@ -254,7 +255,7 @@ struct DatabaseBlockView: View {
                         .font(.system(size: 10))
                         .foregroundStyle(Palette.tertiaryText)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
             }
 
             Button {
@@ -267,7 +268,7 @@ struct DatabaseBlockView: View {
                     .frame(width: 18, height: 18)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .help("Hide search")
         }
         .padding(.horizontal, 10)
@@ -329,7 +330,7 @@ struct DatabaseBlockView: View {
                             $0.sorts.removeAll()
                         }
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.plainPointer)
                     .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(Palette.tertiaryText)
                     .padding(.horizontal, 5)
@@ -562,7 +563,7 @@ struct DatabaseBlockView: View {
                         .glassPanel(cornerRadius: 5)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .help("New page in \(option)")
             }
             .padding(.horizontal, 9)
@@ -659,6 +660,7 @@ struct DatabaseBlockView: View {
             }
             .fixedSize()
             .glassButtonStyle()
+            .pointingHandCursor()
         }
         .frame(maxWidth: .infinity)
         .padding(30)
@@ -815,7 +817,7 @@ struct DatabaseBlockView: View {
                     $0.filters.removeAll()
                 }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .font(.system(size: 10.5, weight: .medium))
             .foregroundStyle(Palette.primaryText)
         }
@@ -850,6 +852,7 @@ struct DatabaseBlockView: View {
                 }
                 .fixedSize()
                 .glassButtonStyle()
+                .pointingHandCursor()
             }
         }
         .frame(maxWidth: .infinity)
@@ -886,6 +889,7 @@ struct DatabaseBlockView: View {
                 }
                 .fixedSize()
                 .glassButtonStyle(prominent: true)
+                .pointingHandCursor()
             }
         }
         .frame(maxWidth: .infinity)
@@ -1360,6 +1364,7 @@ private struct DatabaseTableHeaderCell: View {
                     .contentShape(Rectangle())
             }
             .menuStyle(.borderlessButton)
+            .pointingHandCursor()
             .menuIndicator(.hidden)
             .fixedSize()
         }
@@ -1494,7 +1499,7 @@ private struct DatabaseBoardCard: View {
                     .stroke(Palette.border.opacity(0.55), lineWidth: 0.7)
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plainGrab)
         .onHover { isHovering = $0 }
         .contextMenu {
             Button("Open") { onOpen() }
@@ -1538,7 +1543,7 @@ private struct DatabaseListRow: View {
                 }
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .frame(maxWidth: .infinity, alignment: .leading)
 
             ForEach(editableProperties) { property in
@@ -1561,7 +1566,7 @@ private struct DatabaseListRow: View {
                     .frame(width: 16, height: 22)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .opacity(isHovering ? 1 : 0.35)
         }
         .padding(.horizontal, 11)
@@ -1643,6 +1648,7 @@ private struct DatabaseNewRowSheet: View {
                 Spacer()
                 Button("Cancel", action: onCancel)
                     .keyboardShortcut(.cancelAction)
+                    .pointingHandCursor()
                 Button("Create", action: create)
                     .glassButtonStyle(prominent: true)
                     .keyboardShortcut(.defaultAction)
@@ -1694,6 +1700,7 @@ private struct DatabaseRenameViewSheet: View {
                 Spacer()
                 Button("Cancel", action: onCancel)
                     .keyboardShortcut(.cancelAction)
+                    .pointingHandCursor()
                 Button("Save") {
                     onSave(name)
                 }

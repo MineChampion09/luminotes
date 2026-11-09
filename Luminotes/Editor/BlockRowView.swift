@@ -131,6 +131,7 @@ struct BlockRowView: View {
                     .contentShape(Rectangle())
             }
             .menuStyle(.borderlessButton)
+            .pointingHandCursor()
             .menuIndicator(.hidden)
             .help("Insert block")
 
@@ -165,6 +166,7 @@ struct BlockRowView: View {
                     )
                     .luminotesShadow()
                 }
+                .openHandCursor()
                 .help("Drag to move")
         }
         .opacity(isHovering || isMenuOpen ? 1 : 0)
@@ -287,7 +289,7 @@ struct BlockRowView: View {
                     .frame(width: 20, height: 22, alignment: .leading)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .padding(.top, 1)
 
         case .toggle:
@@ -300,7 +302,7 @@ struct BlockRowView: View {
                     .frame(width: 20, height: 22, alignment: .leading)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .padding(.top, 1)
 
         default:
@@ -352,6 +354,7 @@ private struct CodeBlockView: View {
                     )
                 }
                 .menuStyle(.borderlessButton)
+                .pointingHandCursor()
                 .menuIndicator(.hidden)
 
                 Spacer()
@@ -370,7 +373,7 @@ private struct CodeBlockView: View {
                             .font(.system(size: 10.5, weight: .medium))
                             .foregroundStyle(Palette.secondaryText)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.plainPointer)
                     .transition(.opacity)
                 }
             }
@@ -518,7 +521,7 @@ private struct ImageBlockView: View {
                 .frame(height: 128)
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
         }
     }
 
@@ -538,7 +541,7 @@ private struct ImageBlockView: View {
                 .frame(width: 22, height: 20)
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plainPointer)
         .help(help)
     }
 
@@ -909,6 +912,7 @@ private struct TableOptionsMenu: View {
                 .contentShape(Rectangle())
         }
         .menuStyle(.borderlessButton)
+        .pointingHandCursor()
         .menuIndicator(.hidden)
         .help("Table options")
     }

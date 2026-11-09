@@ -136,7 +136,7 @@ struct DatabaseSettingsView: View {
                     }
                     .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
             }
             Spacer()
         }
@@ -228,7 +228,7 @@ struct DatabaseSettingsView: View {
                     .frame(width: 22, height: 22)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .help("Show or hide in this view")
 
             Menu {
@@ -249,6 +249,7 @@ struct DatabaseSettingsView: View {
                     .contentShape(Rectangle())
             }
             .menuStyle(.borderlessButton)
+            .pointingHandCursor()
             .menuIndicator(.hidden)
         }
         .padding(.horizontal, 9)
@@ -258,6 +259,7 @@ struct DatabaseSettingsView: View {
                 .fill(editingPropertyID == property.id ? Palette.selection : Color.clear)
         )
         .contentShape(Rectangle())
+        .pointingHandCursor()
         .onTapGesture {
             startEditing(property)
         }
@@ -272,7 +274,7 @@ struct DatabaseSettingsView: View {
                 Button("Cancel") {
                     editingPropertyID = nil
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .foregroundStyle(Palette.secondaryText)
             }
 
@@ -285,6 +287,7 @@ struct DatabaseSettingsView: View {
                 }
             }
             .disabled(property.type == .title)
+            .pointingHandCursor()
 
             if property.type.supportsOptions {
                 TextField(
@@ -334,6 +337,7 @@ struct DatabaseSettingsView: View {
                     Label(type.title, systemImage: type.icon).tag(type)
                 }
             }
+            .pointingHandCursor()
 
             if newPropertyType.supportsOptions {
                 TextField("Options, separated by commas", text: $newPropertyOptions)
@@ -543,7 +547,7 @@ struct DatabaseSettingsView: View {
                     .frame(width: 22, height: 22)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
         }
         .padding(.horizontal, 9)
         .frame(height: 36)
@@ -616,7 +620,7 @@ struct DatabaseSettingsView: View {
                 Label("Add sort", systemImage: "plus")
                     .font(.system(size: 11, weight: .medium))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .foregroundStyle(Palette.secondaryText)
         }
     }
@@ -661,7 +665,7 @@ struct DatabaseSettingsView: View {
                         .stroke(Palette.border.opacity(0.6), lineWidth: 0.6)
                 )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
 
             Spacer()
 
@@ -676,7 +680,7 @@ struct DatabaseSettingsView: View {
                     .frame(width: 22, height: 22)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
         }
         .padding(.horizontal, 9)
         .frame(height: 38)
@@ -719,6 +723,7 @@ struct DatabaseSettingsView: View {
                 }
             }
             .pickerStyle(.radioGroup)
+            .pointingHandCursor()
 
             if selectProperties.isEmpty {
                 emptyHint(
@@ -757,6 +762,7 @@ struct DatabaseSettingsView: View {
                 }
             }
             .pickerStyle(.segmented)
+            .pointingHandCursor()
 
             Divider().overlay(Palette.border)
 
@@ -797,6 +803,7 @@ struct DatabaseSettingsView: View {
                 }
             }
             .pickerStyle(.radioGroup)
+            .pointingHandCursor()
 
             Text(rowSourceDescription)
                 .font(.system(size: 10.5))
@@ -977,6 +984,7 @@ struct DatabaseSettingsView: View {
             .contentShape(Rectangle())
         }
         .menuStyle(.borderlessButton)
+        .pointingHandCursor()
         .menuIndicator(.hidden)
         .fixedSize()
     }

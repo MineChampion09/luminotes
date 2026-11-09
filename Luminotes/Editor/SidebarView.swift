@@ -130,7 +130,7 @@ struct SidebarView: View {
                     .frame(width: 22, height: 22)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .help("New note")
 
             Button {
@@ -142,7 +142,7 @@ struct SidebarView: View {
                     .frame(width: 22, height: 22)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .help("Refresh files")
         }
         .contextMenu {
@@ -181,7 +181,7 @@ struct SidebarView: View {
                         .font(.system(size: 10))
                         .foregroundStyle(Palette.tertiaryText)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
             }
         }
         .padding(.horizontal, 8)
@@ -260,7 +260,7 @@ struct SidebarView: View {
             Button("Create a note") {
                 viewModel.createProjectNote()
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .font(.system(size: 11, weight: .medium))
             .foregroundStyle(Palette.secondaryText)
             Spacer()
@@ -295,7 +295,7 @@ struct SidebarView: View {
                     .padding(.horizontal, 7)
                     .frame(height: 22)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .glassPanel(cornerRadius: 7)
 
             Spacer()
@@ -309,7 +309,7 @@ struct SidebarView: View {
                     .frame(width: 20, height: 20)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .help("Reveal project in Finder")
         }
         .padding(.horizontal, 12)
@@ -525,7 +525,7 @@ private struct SidebarFolderRow: View {
                     .fill(isHovering ? Palette.hover : Color.clear)
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.plainPointer)
         .onHover { isHovering = $0 }
     }
 }
@@ -572,7 +572,7 @@ private struct SidebarFileRow: View {
                 .frame(height: 32)
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
 
             if isHovering && file.isAsset {
                 Image(systemName: "line.3.horizontal")
@@ -583,6 +583,7 @@ private struct SidebarFileRow: View {
                     .onDrag {
                         NSItemProvider(object: file.url as NSURL)
                     }
+                    .openHandCursor()
                     .help("Drag into a note")
                     .padding(.trailing, 6)
             } else {

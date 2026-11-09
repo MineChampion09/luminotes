@@ -137,7 +137,7 @@ struct PDFEditorView: View {
                     .frame(width: 24, height: 24)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .help("Close without saving")
 
             Text(title)
@@ -159,7 +159,7 @@ struct PDFEditorView: View {
                             .frame(width: 20, height: 20)
                             .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.plainPointer)
                     .disabled(currentPage <= 1)
 
                     Text("\(currentPage) / \(pageCount)")
@@ -179,7 +179,7 @@ struct PDFEditorView: View {
                             .frame(width: 20, height: 20)
                             .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.plainPointer)
                     .disabled(currentPage >= pageCount)
                 }
                 .foregroundStyle(Palette.secondaryText)
@@ -197,7 +197,7 @@ struct PDFEditorView: View {
             } label: {
                 Label("Add Text", systemImage: "textformat")
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .font(.system(size: 11.5, weight: .medium))
             .foregroundStyle(Palette.secondaryText)
             .padding(.horizontal, 6)
@@ -215,7 +215,7 @@ struct PDFEditorView: View {
             } label: {
                 Label("Add Math", systemImage: "function")
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .font(.system(size: 11.5, weight: .medium))
             .foregroundStyle(Palette.secondaryText)
             .padding(.horizontal, 6)
@@ -230,7 +230,7 @@ struct PDFEditorView: View {
                         .frame(width: 24, height: 24)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .help("Zoom out")
 
                 Button {
@@ -241,7 +241,7 @@ struct PDFEditorView: View {
                         .frame(width: 24, height: 24)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .help("Reset zoom")
 
                 Button {
@@ -251,7 +251,7 @@ struct PDFEditorView: View {
                         .frame(width: 24, height: 24)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .help("Zoom in")
             }
             .font(.system(size: 11, weight: .medium))
@@ -281,7 +281,7 @@ struct PDFEditorView: View {
                 isPlacingTextBox = false
                 isPlacingMathBox = false
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .foregroundStyle(Palette.secondaryText)
         }
         .foregroundStyle(Palette.secondaryText)
@@ -303,7 +303,7 @@ struct PDFEditorView: View {
                     .frame(height: 36)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .liquidGlassPanel(cornerRadius: 18, tint: .luminotesSidebarTint)
             .popover(isPresented: $isTextOptionsPresented, arrowEdge: .bottom) {
                 textOptionsPopover
@@ -320,7 +320,7 @@ struct PDFEditorView: View {
                     .frame(height: 36)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .liquidGlassPanel(cornerRadius: 18, tint: .luminotesSidebarTint)
             .popover(isPresented: $isMathOptionsPresented, arrowEdge: .bottom) {
                 mathOptionsPopover
@@ -383,6 +383,7 @@ struct PDFEditorView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                         }
                         .menuStyle(.borderlessButton)
+                        .pointingHandCursor()
                         .menuIndicator(.hidden)
                     }
 
@@ -458,7 +459,7 @@ struct PDFEditorView: View {
                             Label("Edit Text", systemImage: "pencil")
                                 .font(.system(size: 11, weight: .medium))
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.plainPointer)
                         .foregroundStyle(Palette.secondaryText)
 
                         Spacer()
@@ -470,7 +471,7 @@ struct PDFEditorView: View {
                             Label("Delete", systemImage: "trash")
                                 .font(.system(size: 11, weight: .medium))
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.plainPointer)
                         .foregroundStyle(Palette.secondaryText)
                     }
                 }
@@ -569,7 +570,7 @@ struct PDFEditorView: View {
                             Label("Delete", systemImage: "trash")
                                 .font(.system(size: 11, weight: .medium))
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.plainPointer)
                         .foregroundStyle(Palette.secondaryText)
                     }
                 }

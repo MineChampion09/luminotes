@@ -72,7 +72,7 @@ struct MermaidBlockView: View {
                     .frame(height: 22)
                     .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
             .help("Edit Mermaid source")
         }
         .padding(.horizontal, 10)
@@ -98,7 +98,7 @@ struct MermaidBlockView: View {
                 .frame(height: 120)
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.plainPointer)
         } else {
             MermaidWebView(
                 source: displayedSource,
@@ -146,7 +146,7 @@ struct MermaidBlockView: View {
                 Button("Cancel") {
                     isEditing = false
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plainPointer)
                 .foregroundStyle(Palette.secondaryText)
 
                 Button("Done") {
