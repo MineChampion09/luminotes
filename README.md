@@ -126,9 +126,11 @@ folders stay normal folders in the sidebar.
   rows are **Notes**, **Assets**, or **All files**.
 - Clicking a note row opens it. Clicking an asset row opens it in the built-in
   image viewer or PDF editor. **New page** creates a Markdown row in the folder.
-- After opening a row, the back button in the top bar returns to the database
-  page it came from.
+- After opening a row, the floating back button below the top bar returns to
+  the database page it came from.
 - List rows show editable property values; click a value to edit it in place.
+- The Layout settings tab switches between Table, Board, and List, and can pin
+  a view to a fixed height so it scrolls internally instead of expanding the note.
 - The search button in the header shows a search field that filters rows by title
   and property values; hide it again with the same button.
 - Properties are edited inline. The settings panel adds properties, chooses which

@@ -45,27 +45,21 @@ struct DatabasePropertyPill: View {
             if options.isEmpty {
                 EmptyPill()
             } else {
-                HStack(spacing: 4) {
-                    ForEach(options.prefix(compact ? 1 : 2), id: \.self) { option in
-                        DatabaseOptionPill(text: option, compact: compact)
-                    }
-                    if options.count > (compact ? 1 : 2) {
-                        Text("+\(options.count - (compact ? 1 : 2))")
-                            .font(.system(size: compact ? 9 : 9.5, weight: .medium))
-                            .foregroundStyle(Palette.tertiaryText)
-                    }
+                Label {
+                    Text(options.joined(separator: ", "))
+                        .font(.system(size: compact ? 10 : 10.5))
+                        .lineLimit(1)
+                } icon: {
+                    Image(systemName: "tag.fill")
+                        .font(.system(size: compact ? 8.5 : 9))
                 }
+                .foregroundStyle(Palette.secondaryText)
             }
 
         case .checkbox:
-            Label {
-                Text(value == "true" ? "Yes" : "No")
-                    .font(.system(size: compact ? 10 : 10.5))
-            } icon: {
-                Image(systemName: value == "true" ? "checkmark.square.fill" : "square")
-                    .font(.system(size: compact ? 9.5 : 10))
-            }
-            .foregroundStyle(value == "true" ? Palette.primaryText : Palette.tertiaryText)
+            Image(systemName: value == "true" ? "checkmark.square.fill" : "square")
+                .font(.system(size: compact ? 10 : 11))
+                .foregroundStyle(value == "true" ? Palette.primaryText : Palette.tertiaryText)
 
         case .date:
             if value.isEmpty {
@@ -376,11 +370,6 @@ struct DatabaseCellView: View {
                         .foregroundStyle(
                             value == "true" ? Palette.primaryText : Palette.tertiaryText
                         )
-                    if value == "true" {
-                        Text("Done")
-                            .font(.system(size: 10.5))
-                            .foregroundStyle(Palette.secondaryText)
-                    }
                     Spacer(minLength: 0)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -447,14 +436,13 @@ struct DatabaseCellView: View {
                             .font(.system(size: 10.5))
                             .foregroundStyle(Palette.tertiaryText)
                     } else {
-                        ForEach(Array(selectedOptions).sorted().prefix(2), id: \.self) { option in
-                            DatabaseOptionPill(text: option, compact: true)
-                        }
-                        if selectedOptions.count > 2 {
-                            Text("+\(selectedOptions.count - 2)")
-                                .font(.system(size: 9, weight: .medium))
-                                .foregroundStyle(Palette.tertiaryText)
-                        }
+                        Image(systemName: "tag.fill")
+                            .font(.system(size: 9))
+                            .foregroundStyle(Palette.tertiaryText)
+                        Text(selectedOptions.sorted().joined(separator: ", "))
+                            .font(.system(size: 10.5))
+                            .foregroundStyle(Palette.secondaryText)
+                            .lineLimit(1)
                     }
                     Spacer(minLength: 0)
                 }

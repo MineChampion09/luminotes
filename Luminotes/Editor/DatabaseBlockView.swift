@@ -381,7 +381,9 @@ struct DatabaseBlockView: View {
         properties: [DatabaseProperty],
         config: DatabaseConfig
     ) -> some View {
-        ScrollView(.horizontal, showsIndicators: true) {
+        let view = config.view(for: block.databaseViewID)
+
+        return ScrollView(.horizontal, showsIndicators: true) {
             VStack(spacing: 0) {
                 tableHeader(properties: properties, config: config)
 
@@ -403,7 +405,7 @@ struct DatabaseBlockView: View {
                         }
                     }
                 }
-                .frame(maxHeight: 430)
+                .databaseHeight(fixed: view.fixedHeight, maxHeight: 430)
             }
         }
     }
@@ -513,7 +515,7 @@ struct DatabaseBlockView: View {
                 }
                 .padding(12)
             }
-            .frame(minHeight: 200)
+            .databaseHeight(fixed: view.fixedHeight, maxHeight: 400)
         )
     }
 
@@ -715,7 +717,7 @@ struct DatabaseBlockView: View {
                 }
             }
         }
-        .frame(maxHeight: 430)
+        .databaseHeight(fixed: view.fixedHeight, maxHeight: 430)
     }
 
     private func groupedRows(
@@ -1706,6 +1708,17 @@ private struct DatabaseRenameViewSheet: View {
         .presentationBackground(.ultraThinMaterial)
         .onAppear {
             focused = true
+        }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func databaseHeight(fixed: Bool, maxHeight: CGFloat) -> some View {
+        if fixed {
+            frame(height: maxHeight)
+        } else {
+            frame(maxHeight: maxHeight)
         }
     }
 }

@@ -274,6 +274,7 @@ struct DatabaseView: Identifiable, Codable, Equatable, Hashable, Sendable {
     var groupPropertyID: String?
     var filters: [DatabaseFilter]
     var sorts: [DatabaseSort]
+    var fixedHeight: Bool
 
     /// Legacy single-sort accessors kept for configs written by older builds.
     var sortPropertyID: String? {
@@ -308,7 +309,8 @@ struct DatabaseView: Identifiable, Codable, Equatable, Hashable, Sendable {
         sortAscending: Bool = true,
         groupPropertyID: String? = nil,
         filters: [DatabaseFilter] = [],
-        sorts: [DatabaseSort] = []
+        sorts: [DatabaseSort] = [],
+        fixedHeight: Bool = false
     ) {
         self.id = id
         self.name = name
@@ -316,6 +318,7 @@ struct DatabaseView: Identifiable, Codable, Equatable, Hashable, Sendable {
         self.visiblePropertyIDs = visiblePropertyIDs
         self.groupPropertyID = groupPropertyID
         self.filters = filters
+        self.fixedHeight = fixedHeight
         if sorts.isEmpty, let sortPropertyID {
             self.sorts = [
                 DatabaseSort(propertyID: sortPropertyID, ascending: sortAscending)
@@ -327,7 +330,7 @@ struct DatabaseView: Identifiable, Codable, Equatable, Hashable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case id, name, layout, visiblePropertyIDs, sortPropertyID, sortAscending
-        case groupPropertyID, filters, sorts
+        case groupPropertyID, filters, sorts, fixedHeight
     }
 
     init(from decoder: Decoder) throws {
@@ -338,6 +341,7 @@ struct DatabaseView: Identifiable, Codable, Equatable, Hashable, Sendable {
         visiblePropertyIDs = try container.decodeIfPresent([String].self, forKey: .visiblePropertyIDs) ?? []
         groupPropertyID = try container.decodeIfPresent(String.self, forKey: .groupPropertyID)
         filters = try container.decodeIfPresent([DatabaseFilter].self, forKey: .filters) ?? []
+        fixedHeight = try container.decodeIfPresent(Bool.self, forKey: .fixedHeight) ?? false
         if let decodedSorts = try container.decodeIfPresent([DatabaseSort].self, forKey: .sorts),
            !decodedSorts.isEmpty {
             sorts = decodedSorts
@@ -359,6 +363,7 @@ struct DatabaseView: Identifiable, Codable, Equatable, Hashable, Sendable {
         try container.encodeIfPresent(groupPropertyID, forKey: .groupPropertyID)
         try container.encode(filters, forKey: .filters)
         try container.encode(sorts, forKey: .sorts)
+        try container.encode(fixedHeight, forKey: .fixedHeight)
     }
 }
 

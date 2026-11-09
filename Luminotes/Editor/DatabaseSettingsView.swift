@@ -5,6 +5,7 @@ enum DatabaseSettingsTab: String, CaseIterable, Identifiable {
     case filter
     case sort
     case group
+    case layout
     case rows
 
     var id: String { rawValue }
@@ -15,6 +16,7 @@ enum DatabaseSettingsTab: String, CaseIterable, Identifiable {
         case .filter: return "Filter"
         case .sort: return "Sort"
         case .group: return "Group"
+        case .layout: return "Layout"
         case .rows: return "Rows"
         }
     }
@@ -25,6 +27,7 @@ enum DatabaseSettingsTab: String, CaseIterable, Identifiable {
         case .filter: return "line.3.horizontal.decrease.circle"
         case .sort: return "arrow.up.arrow.down"
         case .group: return "rectangle.3.group"
+        case .layout: return "rectangle.split.3x1"
         case .rows: return "tablecells"
         }
     }
@@ -90,8 +93,6 @@ struct DatabaseSettingsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-            Divider().overlay(Palette.border)
             HStack(spacing: 0) {
                 sidebar
                 Divider().overlay(Palette.border)
@@ -109,30 +110,6 @@ struct DatabaseSettingsView: View {
         .presentationBackground(.ultraThinMaterial)
     }
 
-    private var header: some View {
-        HStack(spacing: 10) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .fill(Palette.hover)
-                Image(systemName: view.layout.icon)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Palette.secondaryText)
-            }
-            .frame(width: 28, height: 28)
-
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Database settings")
-                    .font(.system(size: 13.5, weight: .semibold))
-                Text("\(folderURL.lastPathComponent) · \(view.name)")
-                    .font(.system(size: 10.5))
-                    .foregroundStyle(Palette.tertiaryText)
-            }
-
-            Spacer()
-        }
-        .padding(.horizontal, 16)
-        .frame(height: 54)
-    }
 
     private var sidebar: some View {
         VStack(alignment: .leading, spacing: 3) {
@@ -178,6 +155,8 @@ struct DatabaseSettingsView: View {
             sortTab
         case .group:
             groupTab
+        case .layout:
+            layoutTab
         case .rows:
             rowsTab
         }
@@ -753,6 +732,47 @@ struct DatabaseSettingsView: View {
                     .font(.system(size: 10))
                     .foregroundStyle(Palette.tertiaryText)
             }
+        }
+    }
+
+    // MARK: - Layout
+
+    private var layoutTab: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            sectionTitle(
+                "Layout",
+                subtitle: "Choose how this view displays rows."
+            )
+
+            Picker("View", selection: Binding(
+                get: { view.layout },
+                set: { newValue in
+                    guard draft.views.indices.contains(viewIndex) else { return }
+                    draft.views[viewIndex].layout = newValue
+                    commit()
+                }
+            )) {
+                ForEach(DatabaseLayout.allCases) { layout in
+                    Label(layout.title, systemImage: layout.icon).tag(layout)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            Divider().overlay(Palette.border)
+
+            Toggle("Fixed height", isOn: Binding(
+                get: { view.fixedHeight },
+                set: { newValue in
+                    guard draft.views.indices.contains(viewIndex) else { return }
+                    draft.views[viewIndex].fixedHeight = newValue
+                    commit()
+                }
+            ))
+
+            Text("Keep this view at a fixed height and scroll inside it instead of expanding the note.")
+                .font(.system(size: 10.5))
+                .foregroundStyle(Palette.tertiaryText)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 

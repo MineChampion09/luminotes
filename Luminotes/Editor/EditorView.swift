@@ -60,6 +60,11 @@ struct EditorView: View {
                 .padding(.top, 12)
         }
         .ignoresSafeArea(.container, edges: .top)
+        .overlay(alignment: .topLeading) {
+            if viewModel.canGoBack {
+                backButton
+            }
+        }
         .coordinateSpace(name: "EditorViewport")
         .onPreferenceChange(BlockFramePreferenceKey.self) { frames in
             // Frames are only needed to position the slash menu. Tracking them
@@ -135,22 +140,25 @@ struct EditorView: View {
         appearanceMode == "dark" || (appearanceMode == "system" && colorScheme == .dark)
     }
 
+    private var backButton: some View {
+        Button {
+            viewModel.goBack()
+        } label: {
+            Image(systemName: "chevron.left")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Palette.secondaryText)
+                .frame(width: 34, height: 30)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .glassPanel(cornerRadius: 10)
+        .padding(.leading, viewModel.isSidebarVisible ? 16 : 92)
+        .padding(.top, 58)
+        .help("Back to database")
+    }
+
     private var topBar: some View {
         HStack(spacing: 9) {
-            if viewModel.canGoBack {
-                Button {
-                    viewModel.goBack()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 11.5, weight: .semibold))
-                        .foregroundStyle(Palette.secondaryText)
-                        .frame(width: 24, height: 22)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .help("Back to database")
-            }
-
             Button {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     viewModel.toggleSidebar()
