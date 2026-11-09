@@ -4,6 +4,7 @@ import SwiftUI
 @main
 struct LuminotesApp: App {
     @StateObject private var viewModel = EditorViewModel()
+    @StateObject private var updater = UpdateChecker()
     @AppStorage("Luminotes.appearance") private var appearanceMode = "light"
 
     init() {
@@ -31,6 +32,9 @@ struct LuminotesApp: App {
                 .frame(minWidth: 900, minHeight: 600)
                 .preferredColorScheme(preferredScheme)
                 .onAppear(perform: applyAppearance)
+                .onAppear {
+                    updater.checkForUpdatesIfNeeded()
+                }
                 .onChange(of: appearanceMode) { _, _ in
                     applyAppearance()
                 }
@@ -149,7 +153,7 @@ struct LuminotesApp: App {
         }
 
         Settings {
-            SettingsView(viewModel: viewModel)
+            SettingsView(viewModel: viewModel, updater: updater)
         }
     }
 

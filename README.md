@@ -33,6 +33,10 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
+The app can check for and install the latest release from **Settings → Updates**
+(`⌘,`). Settings are stored in `UserDefaults` outside the app bundle, so they
+persist across updates.
+
 ## Projects
 
 - Press **⌘O** or click **Choose Folder…** to open any folder as a project.
