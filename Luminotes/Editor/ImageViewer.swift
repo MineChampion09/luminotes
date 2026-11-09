@@ -11,27 +11,15 @@ struct ImageViewer: View {
 
     var body: some View {
         ZStack {
-            WindowGlassBackground()
+            Color.black.opacity(0.92)
 
             ZStack(alignment: .top) {
                 ImageCanvas(image: image, zoom: $zoom, pan: $pan)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 64)
-                    .padding(.bottom, 16)
 
                 toolbar
             }
         }
         .frame(width: 1000, height: 760)
-        .overlay(alignment: .bottom) {
-            Text("Drag to pan · Pinch or scroll to zoom")
-                .font(.system(size: 10.5, weight: .medium))
-                .foregroundStyle(Palette.secondaryText)
-                .padding(.horizontal, 12)
-                .frame(height: 30)
-                .liquidGlassPanel(cornerRadius: 15, tint: .luminotesSidebarTint)
-                .padding(.bottom, 16)
-        }
         .onExitCommand {
             dismiss()
         }
@@ -121,36 +109,55 @@ private struct ImageCanvas: View {
                 height: image.size.height * scale
             )
 
-            Image(nsImage: image)
-                .resizable()
-                .interpolation(.high)
-                .frame(width: size.width, height: size.height)
-                .position(
-                    x: proxy.size.width / 2 + pan.width,
-                    y: proxy.size.height / 2 + pan.height
-                )
-                .gesture(panGesture)
-                .onHover { hovering in
-                    if hovering {
-                        NSCursor.openHand.set()
-                    } else {
-                        NSCursor.arrow.set()
-                    }
+            ZStack {
+                Image(nsImage: image)
+                    .resizable()
+                    .interpolation(.high)
+                    .frame(width: size.width, height: size.height)
+                    .position(
+                        x: proxy.size.width / 2 + pan.width,
+                        y: proxy.size.height / 2 + pan.height
+                    )
+            }
+            .frame(width: proxy.size.width, height: proxy.size.height)
+            .contentShape(Rectangle())
+            .gesture(panGesture)
+            .onHover { hovering in
+                if hovering {
+                    NSCursor.openHand.set()
+                } else {
+                    NSCursor.arrow.set()
                 }
+            }
+            .overlay {
+                ImageCanvasEventMonitor(
+                    onScroll: { delta, point in
+                        let factor = min(max(1 + delta.height * 0.01, 0.8), 1.2)
+                        applyZoom(by: factor, at: point, in: proxy.size)
+                    },
+                    onMagnify: { magnification, point in
+                        applyZoom(by: 1 + magnification, at: point, in: proxy.size)
+                    }
+                )
+                .allowsHitTesting(false)
+            }
         }
         .clipped()
-        .overlay {
-            PDFCanvasEventMonitor(
-                onScroll: { delta in
-                    pan.width += delta.width
-                    pan.height += delta.height
-                },
-                onMagnify: { magnification in
-                    zoom = min(max(zoom * (1 + magnification), 0.25), 8)
-                }
-            )
-            .allowsHitTesting(false)
-        }
+    }
+
+    private func applyZoom(by factor: CGFloat, at point: CGPoint, in size: CGSize) {
+        let oldZoom = zoom
+        let newZoom = min(max(oldZoom * factor, 0.25), 8)
+        guard abs(newZoom - oldZoom) > 0.0001 else { return }
+
+        let center = CGPoint(x: size.width / 2, y: size.height / 2)
+        let dx = point.x - center.x
+        let dy = point.y - center.y
+        let ratio = newZoom / oldZoom
+
+        pan.width = dx - (dx - pan.width) * ratio
+        pan.height = dy - (dy - pan.height) * ratio
+        zoom = newZoom
     }
 
     private var panGesture: some Gesture {
@@ -168,5 +175,83 @@ private struct ImageCanvas: View {
             .onEnded { _ in
                 panStart = nil
             }
+    }
+}
+
+private struct ImageCanvasEventMonitor: NSViewRepresentable {
+    let onScroll: (CGSize, CGPoint) -> Void
+    let onMagnify: (CGFloat, CGPoint) -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    func makeNSView(context: Context) -> MonitorView {
+        let view = MonitorView()
+        view.onScroll = onScroll
+        view.onMagnify = onMagnify
+        context.coordinator.install(for: view)
+        return view
+    }
+
+    func updateNSView(_ view: MonitorView, context: Context) {
+        view.onScroll = onScroll
+        view.onMagnify = onMagnify
+    }
+
+    static func dismantleNSView(_ view: MonitorView, coordinator: Coordinator) {
+        coordinator.remove()
+    }
+
+    final class MonitorView: NSView {
+        var onScroll: ((CGSize, CGPoint) -> Void)?
+        var onMagnify: ((CGFloat, CGPoint) -> Void)?
+
+        override func hitTest(_ point: NSPoint) -> NSView? {
+            nil
+        }
+    }
+
+    final class Coordinator {
+        private var monitor: Any?
+
+        func install(for view: MonitorView) {
+            monitor = NSEvent.addLocalMonitorForEvents(
+                matching: [.scrollWheel, .magnify]
+            ) { [weak view] event in
+                guard let view,
+                      let window = view.window,
+                      event.window == window else {
+                    return event
+                }
+
+                let point = view.convert(event.locationInWindow, from: nil)
+                guard view.bounds.contains(point) else { return event }
+
+                switch event.type {
+                case .scrollWheel:
+                    view.onScroll?(
+                        CGSize(
+                            width: event.scrollingDeltaX,
+                            height: event.scrollingDeltaY
+                        ),
+                        point
+                    )
+                    return nil
+                case .magnify:
+                    view.onMagnify?(event.magnification, point)
+                    return nil
+                default:
+                    return event
+                }
+            }
+        }
+
+        func remove() {
+            if let monitor {
+                NSEvent.removeMonitor(monitor)
+            }
+            monitor = nil
+        }
     }
 }
