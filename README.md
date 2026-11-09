@@ -46,6 +46,13 @@ updates, configure `MACOS_CERT_P12` (base64-encoded `.p12`) and
 `MACOS_CERT_PASSWORD` repository secrets so release builds are signed with the
 same identity. Without them, releases fall back to ad-hoc signing.
 
+If macOS runs a downloaded copy from a temporary App Translocation path and
+keeps asking for permissions, remove the quarantine attribute once:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/Luminotes.app
+```
+
 ## Projects
 
 - Press **⌘O** or click **Choose Folder…** to open any folder as a project.

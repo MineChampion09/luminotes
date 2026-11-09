@@ -194,7 +194,22 @@ final class UpdateChecker: ObservableObject {
             throw UpdateError("The update did not contain a Luminotes app.")
         }
 
-        let destination = Bundle.main.bundleURL.resolvingSymlinksInPath()
+        let bundleURL = Bundle.main.bundleURL.resolvingSymlinksInPath()
+        let destination: URL
+        if bundleURL.path.contains("/AppTranslocation/") {
+            // Gatekeeper may run a quarantined app from a temporary location.
+            // Update the real installed app instead of the read-only copy.
+            let applicationsURL = URL(fileURLWithPath: "/Applications/Luminotes.app")
+            guard fileManager.fileExists(atPath: applicationsURL.path) else {
+                throw UpdateError(
+                    "Luminotes is running from a temporary location. Move it to Applications and relaunch before updating."
+                )
+            }
+            destination = applicationsURL
+        } else {
+            destination = bundleURL
+        }
+
         let helperURL = work.appendingPathComponent("update-helper.sh")
         let replaceURL = work.appendingPathComponent("replace-app.sh")
         try Self.helperScript.write(to: helperURL, atomically: true, encoding: .utf8)
