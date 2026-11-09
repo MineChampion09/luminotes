@@ -11,7 +11,7 @@ struct ImageViewer: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.92)
+            WindowGlassBackground()
 
             ZStack(alignment: .top) {
                 ImageCanvas(image: image, zoom: $zoom, pan: $pan)
@@ -131,9 +131,14 @@ private struct ImageCanvas: View {
             }
             .overlay {
                 ImageCanvasEventMonitor(
-                    onScroll: { delta, point in
-                        let factor = min(max(1 + delta.height * 0.01, 0.8), 1.2)
-                        applyZoom(by: factor, at: point, in: proxy.size)
+                    onScroll: { delta, point, command in
+                        if command {
+                            let factor = min(max(1 + delta.height * 0.01, 0.8), 1.2)
+                            applyZoom(by: factor, at: point, in: proxy.size)
+                        } else {
+                            pan.width += delta.width
+                            pan.height += delta.height
+                        }
                     },
                     onMagnify: { magnification, point in
                         applyZoom(by: 1 + magnification, at: point, in: proxy.size)
@@ -179,7 +184,7 @@ private struct ImageCanvas: View {
 }
 
 private struct ImageCanvasEventMonitor: NSViewRepresentable {
-    let onScroll: (CGSize, CGPoint) -> Void
+    let onScroll: (CGSize, CGPoint, Bool) -> Void
     let onMagnify: (CGFloat, CGPoint) -> Void
 
     func makeCoordinator() -> Coordinator {
@@ -204,8 +209,10 @@ private struct ImageCanvasEventMonitor: NSViewRepresentable {
     }
 
     final class MonitorView: NSView {
-        var onScroll: ((CGSize, CGPoint) -> Void)?
+        var onScroll: ((CGSize, CGPoint, Bool) -> Void)?
         var onMagnify: ((CGFloat, CGPoint) -> Void)?
+
+        override var isFlipped: Bool { true }
 
         override func hitTest(_ point: NSPoint) -> NSView? {
             nil
@@ -230,12 +237,15 @@ private struct ImageCanvasEventMonitor: NSViewRepresentable {
 
                 switch event.type {
                 case .scrollWheel:
+                    let command = event.modifierFlags.contains(.command)
+                        || NSEvent.modifierFlags.contains(.command)
                     view.onScroll?(
                         CGSize(
                             width: event.scrollingDeltaX,
                             height: event.scrollingDeltaY
                         ),
-                        point
+                        point,
+                        command
                     )
                     return nil
                 case .magnify:
