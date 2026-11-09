@@ -77,6 +77,9 @@ struct PDFEditorView: View {
                         if isPlacingTextBox || isPlacingMathBox {
                             placementHint
                                 .padding(.top, 72)
+                        } else if selectedBox != nil || selectedMathBox != nil {
+                            annotationEditPill
+                                .padding(.top, 72)
                         }
                     }
                 } else if isLoading {
@@ -184,41 +187,6 @@ struct PDFEditorView: View {
 
             Spacer()
 
-            if selectedBox != nil {
-                Button {
-                    isTextOptionsPresented = true
-                } label: {
-                    Label("Text", systemImage: "character")
-                }
-                .buttonStyle(.plain)
-                .font(.system(size: 11.5, weight: .medium))
-                .foregroundStyle(Palette.secondaryText)
-                .padding(.horizontal, 6)
-                .frame(height: 26)
-                .contentShape(Rectangle())
-                .popover(isPresented: $isTextOptionsPresented, arrowEdge: .bottom) {
-                    textOptionsPopover
-                }
-            }
-
-            if selectedMathBox != nil {
-                Button {
-                    isMathOptionsPresented = true
-                    mathEditStarted = false
-                } label: {
-                    Label("Math", systemImage: "function")
-                }
-                .buttonStyle(.plain)
-                .font(.system(size: 11.5, weight: .medium))
-                .foregroundStyle(Palette.secondaryText)
-                .padding(.horizontal, 6)
-                .frame(height: 26)
-                .contentShape(Rectangle())
-                .popover(isPresented: $isMathOptionsPresented, arrowEdge: .bottom) {
-                    mathOptionsPopover
-                }
-            }
-
             Button {
                 isPlacingTextBox = true
                 isPlacingMathBox = false
@@ -320,6 +288,44 @@ struct PDFEditorView: View {
         .padding(.horizontal, 12)
         .frame(height: 36)
         .liquidGlassPanel(cornerRadius: 18, tint: .luminotesSidebarTint)
+    }
+
+    @ViewBuilder
+    private var annotationEditPill: some View {
+        if selectedBox != nil {
+            Button {
+                isTextOptionsPresented = true
+            } label: {
+                Label("Edit Text", systemImage: "character")
+                    .font(.system(size: 11.5, weight: .medium))
+                    .foregroundStyle(Palette.secondaryText)
+                    .padding(.horizontal, 12)
+                    .frame(height: 36)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .liquidGlassPanel(cornerRadius: 18, tint: .luminotesSidebarTint)
+            .popover(isPresented: $isTextOptionsPresented, arrowEdge: .bottom) {
+                textOptionsPopover
+            }
+        } else if selectedMathBox != nil {
+            Button {
+                isMathOptionsPresented = true
+                mathEditStarted = false
+            } label: {
+                Label("Edit Math", systemImage: "function")
+                    .font(.system(size: 11.5, weight: .medium))
+                    .foregroundStyle(Palette.secondaryText)
+                    .padding(.horizontal, 12)
+                    .frame(height: 36)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .liquidGlassPanel(cornerRadius: 18, tint: .luminotesSidebarTint)
+            .popover(isPresented: $isMathOptionsPresented, arrowEdge: .bottom) {
+                mathOptionsPopover
+            }
+        }
     }
 
     private var selectedBox: PDFTextBox? {
