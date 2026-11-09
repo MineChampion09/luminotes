@@ -401,7 +401,7 @@ private struct ImageBlockView: View {
     @ObservedObject var viewModel: EditorViewModel
     let block: Block
     @State private var image: NSImage?
-    @State private var isHovering = false
+    @State private var isViewingImage = false
     @State private var loadToken = UUID()
 
     private static let imageCache: NSCache<NSURL, NSImage> = {
@@ -412,54 +412,17 @@ private struct ImageBlockView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if let image {
-                ZStack(alignment: .topTrailing) {
-                    Image(nsImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: .infinity)
-                        .frame(maxHeight: 440)
-                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            VStack(spacing: 0) {
+                header
 
-                    if isHovering {
-                        HStack(spacing: 6) {
-                            imageButton("Replace", icon: "arrow.triangle.2.circlepath") {
-                                viewModel.chooseImage(for: block.id)
-                            }
-                            imageButton("Remove", icon: "trash") {
-                                viewModel.removeImage(from: block.id)
-                            }
-                        }
-                        .padding(8)
-                        .transition(.opacity)
-                    }
-                }
-                .onHover { isHovering = $0 }
-            } else {
-                Button {
-                    viewModel.chooseImage(for: block.id)
-                } label: {
-                    VStack(spacing: 7) {
-                        Image(systemName: "photo")
-                            .font(.system(size: 21, weight: .light))
-                        Text("Choose an image")
-                            .font(.system(size: 12, weight: .medium))
-                    }
-                    .foregroundStyle(Palette.secondaryText)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 128)
-                    .glassPanel(cornerRadius: 8)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .strokeBorder(
-                                Palette.border,
-                                style: StrokeStyle(lineWidth: 1, dash: [5, 4])
-                            )
-                    )
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
+                Rectangle()
+                    .fill(Palette.border)
+                    .frame(height: 1)
+
+                imageContent
             }
+            .glassPanel(cornerRadius: 8)
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
             RichTextEditor(
                 viewModel: viewModel,
@@ -479,19 +442,101 @@ private struct ImageBlockView: View {
             loadToken = UUID()
             image = nil
         }
+        .sheet(isPresented: $isViewingImage) {
+            if let image {
+                ImageViewer(image: image, title: imageTitle)
+            }
+        }
     }
 
-    private func imageButton(_ title: String, icon: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Label(title, systemImage: icon)
-                .font(.system(size: 10.5, weight: .medium))
+    private var header: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "photo")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Palette.secondaryText)
+
+            Text(imageTitle)
+                .font(.system(size: 11.5, weight: .medium))
                 .foregroundStyle(Palette.primaryText)
-                .padding(.horizontal, 8)
-                .frame(height: 26)
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .lineLimit(1)
+
+            Spacer()
+
+            if image != nil {
+                headerButton(
+                    "arrow.up.left.and.arrow.down.right",
+                    help: "Open image viewer"
+                ) {
+                    isViewingImage = true
+                }
+
+                headerButton(
+                    "arrow.triangle.2.circlepath",
+                    help: "Replace image"
+                ) {
+                    viewModel.chooseImage(for: block.id)
+                }
+
+                headerButton("trash", help: "Remove image") {
+                    viewModel.removeImage(from: block.id)
+                }
+            }
+        }
+        .padding(.horizontal, 10)
+        .frame(height: 32)
+    }
+
+    @ViewBuilder
+    private var imageContent: some View {
+        if let image {
+            Image(nsImage: image)
+                .resizable()
+                .interpolation(.high)
+                .scaledToFit()
+                .frame(maxWidth: .infinity)
+                .frame(maxHeight: 440)
+                .background(Palette.page)
+                .contentShape(Rectangle())
+                .onTapGesture(count: 2) {
+                    isViewingImage = true
+                }
+        } else {
+            Button {
+                viewModel.chooseImage(for: block.id)
+            } label: {
+                VStack(spacing: 7) {
+                    Image(systemName: "photo")
+                        .font(.system(size: 21, weight: .light))
+                    Text("Choose an image")
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundStyle(Palette.secondaryText)
+                .frame(maxWidth: .infinity)
+                .frame(height: 128)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var imageTitle: String {
+        viewModel.imageURL(for: block)?.lastPathComponent ?? "Image"
+    }
+
+    private func headerButton(
+        _ icon: String,
+        help: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: 10.5, weight: .semibold))
+                .foregroundStyle(Palette.secondaryText)
+                .frame(width: 22, height: 20)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .help(help)
     }
 
     private func loadImage() {

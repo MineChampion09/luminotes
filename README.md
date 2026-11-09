@@ -109,7 +109,7 @@ to `.ultraThinMaterial` and bordered buttons.
 - Code block with a language label and copy button
 - Math equation rendered from LaTeX
 - Mermaid diagram rendered from a fenced `mermaid` block
-- Image with a caption
+- Image with a caption and a zoomable viewer (double-click the image or use the header expand button)
 - PDF embeds rendered with PDFKit, with a full editor for editable text boxes and LaTeX math boxes
 - Editable table with fit-content / fill-width layouts and add/remove rows and columns
 

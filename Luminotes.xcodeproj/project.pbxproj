@@ -41,6 +41,7 @@
 		B000000000000000000009F /* QuickOpenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000000000000000005E /* QuickOpenView.swift */; };
 		B00000000000000000000A0 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000000000000000005F /* SettingsView.swift */; };
 		B00000000000000000000A1 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000060 /* UpdateChecker.swift */; };
+		B00000000000000000000A2 /* ImageViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000061 /* ImageViewer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -79,6 +80,7 @@
 		F000000000000000000005E /* QuickOpenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickOpenView.swift; sourceTree = "<group>"; };
 		F000000000000000000005F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F0000000000000000000060 /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
+		F0000000000000000000061 /* ImageViewer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageViewer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -148,6 +150,7 @@
 				F000000000000000000000E /* SlashCommandMenuView.swift */,
 				F000000000000000000005E /* QuickOpenView.swift */,
 				F000000000000000000005F /* SettingsView.swift */,
+				F0000000000000000000061 /* ImageViewer.swift */,
 			);
 			path = Editor;
 			sourceTree = "<group>";
@@ -289,6 +292,7 @@
 				B000000000000000000000E /* SlashCommandMenuView.swift in Sources */,
 				B000000000000000000009F /* QuickOpenView.swift in Sources */,
 				B00000000000000000000A0 /* SettingsView.swift in Sources */,
+				B00000000000000000000A2 /* ImageViewer.swift in Sources */,
 				B000000000000000000000F /* MarkdownCodec.swift in Sources */,
 				B0000000000000000000010 /* MarkdownParser.swift in Sources */,
 				B0000000000000000000011 /* NoteStore.swift in Sources */,

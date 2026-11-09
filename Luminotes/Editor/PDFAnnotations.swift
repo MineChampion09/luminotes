@@ -1172,7 +1172,7 @@ private final class PDFInlineTextView: NSTextView {
     }
 }
 
-private struct PDFCanvasEventMonitor: NSViewRepresentable {
+struct PDFCanvasEventMonitor: NSViewRepresentable {
     let onScroll: (CGSize) -> Void
     let onMagnify: (CGFloat) -> Void
 
