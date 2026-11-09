@@ -12,12 +12,16 @@ struct PDFEditorView: View {
     @State private var isLoading = true
     @State private var loadFailed = false
     @State private var isPlacingTextBox = false
+    @State private var isPlacingMathBox = false
     @State private var selectedBoxID: UUID?
+    @State private var selectedMathBoxID: UUID?
     @State private var editingBoxID: UUID?
     @State private var currentPage = 1
     @State private var pageCount = 0
     @State private var zoom: CGFloat = 1
     @State private var isTextOptionsPresented = false
+    @State private var isMathOptionsPresented = false
+    @State private var mathEditStarted = false
     @State private var undoStack: [PDFAnnotationFile] = []
     @State private var redoStack: [PDFAnnotationFile] = []
     @State private var showSaveError = false
@@ -32,24 +36,45 @@ struct PDFEditorView: View {
                         document: document,
                         pageIndex: currentPage - 1,
                         boxes: annotations.textBoxes,
+                        mathBoxes: annotations.mathBoxes,
                         isEditable: true,
                         selectedBoxID: selectedBoxID,
+                        selectedMathBoxID: selectedMathBoxID,
                         editingBoxID: $editingBoxID,
                         zoom: zoom,
                         topInset: 0,
                         isPlacingTextBox: isPlacingTextBox,
+                        isPlacingMathBox: isPlacingMathBox,
                         onPlaceTextBox: addTextBox(at:),
+                        onPlaceMathBox: addMathBox(at:),
                         onZoomChange: { newZoom in zoom = newZoom },
                         onSelect: { id in
                             if id != editingBoxID {
                                 editingBoxID = nil
                             }
                             selectedBoxID = id
+                            selectedMathBoxID = nil
+                            isMathOptionsPresented = false
                         },
-                        onChange: updateBox
+                        onChange: updateBox,
+                        onSelectMath: { id in
+                            editingBoxID = nil
+                            selectedBoxID = nil
+                            isTextOptionsPresented = false
+                            selectedMathBoxID = id
+                        },
+                        onChangeMath: updateMathBox,
+                        onBeginEditingMath: { id in
+                            editingBoxID = nil
+                            selectedBoxID = nil
+                            isTextOptionsPresented = false
+                            selectedMathBoxID = id
+                            isMathOptionsPresented = true
+                            mathEditStarted = false
+                        }
                     )
                     .overlay(alignment: .top) {
-                        if isPlacingTextBox {
+                        if isPlacingTextBox || isPlacingMathBox {
                             placementHint
                                 .padding(.top, 72)
                         }
@@ -76,7 +101,7 @@ struct PDFEditorView: View {
             PDFEditorKeyMonitor(
                 onUndo: undo,
                 onRedo: redo,
-                onDelete: deleteSelectedBoxIfPossible
+                onDelete: deleteSelectedAnnotationIfPossible
             )
             .allowsHitTesting(false)
         }
@@ -122,7 +147,9 @@ struct PDFEditorView: View {
                     Button {
                         currentPage = max(1, currentPage - 1)
                         selectedBoxID = nil
+                        selectedMathBoxID = nil
                         editingBoxID = nil
+                        isMathOptionsPresented = false
                     } label: {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 9.5, weight: .semibold))
@@ -140,7 +167,9 @@ struct PDFEditorView: View {
                     Button {
                         currentPage = min(pageCount, currentPage + 1)
                         selectedBoxID = nil
+                        selectedMathBoxID = nil
                         editingBoxID = nil
+                        isMathOptionsPresented = false
                     } label: {
                         Image(systemName: "chevron.right")
                             .font(.system(size: 9.5, weight: .semibold))
@@ -172,12 +201,51 @@ struct PDFEditorView: View {
                 }
             }
 
+            if selectedMathBox != nil {
+                Button {
+                    isMathOptionsPresented = true
+                    mathEditStarted = false
+                } label: {
+                    Label("Math", systemImage: "function")
+                }
+                .buttonStyle(.plain)
+                .font(.system(size: 11.5, weight: .medium))
+                .foregroundStyle(Palette.secondaryText)
+                .padding(.horizontal, 6)
+                .frame(height: 26)
+                .contentShape(Rectangle())
+                .popover(isPresented: $isMathOptionsPresented, arrowEdge: .bottom) {
+                    mathOptionsPopover
+                }
+            }
+
             Button {
                 isPlacingTextBox = true
+                isPlacingMathBox = false
                 selectedBoxID = nil
+                selectedMathBoxID = nil
                 editingBoxID = nil
+                isMathOptionsPresented = false
             } label: {
                 Label("Add Text", systemImage: "textformat")
+            }
+            .buttonStyle(.plain)
+            .font(.system(size: 11.5, weight: .medium))
+            .foregroundStyle(Palette.secondaryText)
+            .padding(.horizontal, 6)
+            .frame(height: 26)
+            .contentShape(Rectangle())
+
+            Button {
+                isPlacingMathBox = true
+                isPlacingTextBox = false
+                selectedBoxID = nil
+                selectedMathBoxID = nil
+                editingBoxID = nil
+                isTextOptionsPresented = false
+                isMathOptionsPresented = false
+            } label: {
+                Label("Add Math", systemImage: "function")
             }
             .buttonStyle(.plain)
             .font(.system(size: 11.5, weight: .medium))
@@ -233,12 +301,17 @@ struct PDFEditorView: View {
 
     private var placementHint: some View {
         HStack(spacing: 6) {
-            Image(systemName: "text.cursor")
+            Image(systemName: isPlacingMathBox ? "function" : "text.cursor")
                 .font(.system(size: 10.5, weight: .medium))
-            Text("Click anywhere on the page to place a text box.")
-                .font(.system(size: 11, weight: .medium))
+            Text(
+                isPlacingMathBox
+                    ? "Click anywhere on the page to place a math box."
+                    : "Click anywhere on the page to place a text box."
+            )
+            .font(.system(size: 11, weight: .medium))
             Button("Cancel") {
                 isPlacingTextBox = false
+                isPlacingMathBox = false
             }
             .buttonStyle(.plain)
             .foregroundStyle(Palette.secondaryText)
@@ -252,6 +325,11 @@ struct PDFEditorView: View {
     private var selectedBox: PDFTextBox? {
         guard let selectedBoxID else { return nil }
         return annotations.textBoxes.first(where: { $0.id == selectedBoxID })
+    }
+
+    private var selectedMathBox: PDFMathBox? {
+        guard let selectedMathBoxID else { return nil }
+        return annotations.mathBoxes.first(where: { $0.id == selectedMathBoxID })
     }
 
     private let fontChoices: [(id: String, name: String)] = [
@@ -398,6 +476,105 @@ struct PDFEditorView: View {
         }
     }
 
+    private var mathOptionsPopover: some View {
+        Group {
+            if let box = selectedMathBox {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Math box")
+                        .font(.system(size: 11.5, weight: .semibold))
+                        .foregroundStyle(Palette.secondaryText)
+
+                    Text("LaTeX")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Palette.secondaryText)
+
+                    SourceTextEditor(
+                        text: Binding(
+                            get: { selectedMathBox?.latex ?? box.latex },
+                            set: { setMathLatex($0) }
+                        ),
+                        fontSize: 13,
+                        insets: NSSize(width: 8, height: 8)
+                    )
+                    .frame(width: 300, height: 96)
+                    .background(Palette.code)
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .stroke(Palette.border, lineWidth: 1)
+                    )
+
+                    Text("The formula scales to fit the box. Drag or resize the box on the page.")
+                        .font(.system(size: 10))
+                        .foregroundStyle(Palette.tertiaryText)
+
+                    HStack {
+                        Text("Text color")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(Palette.secondaryText)
+                        Spacer()
+                        ColorPicker(
+                            "",
+                            selection: Binding(
+                                get: { Color(hex: box.colorHex) ?? .black },
+                                set: { color in
+                                    updateSelectedMathBox { $0.colorHex = color.hexString }
+                                }
+                            ),
+                            supportsOpacity: false
+                        )
+                        .labelsHidden()
+                        .frame(width: 34)
+                    }
+
+                    HStack {
+                        Text("Background")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(Palette.secondaryText)
+                        Spacer()
+                        ColorPicker(
+                            "",
+                            selection: Binding(
+                                get: { Color(hex: box.backgroundColorHex) ?? .clear },
+                                set: { color in
+                                    updateSelectedMathBox { $0.backgroundColorHex = color.hexStringWithAlpha }
+                                }
+                            ),
+                            supportsOpacity: true
+                        )
+                        .labelsHidden()
+                        .frame(width: 34)
+                    }
+
+                    Divider()
+
+                    HStack {
+                        Button("Done") {
+                            isMathOptionsPresented = false
+                        }
+                        .buttonStyle(.borderedProminent)
+
+                        Spacer()
+
+                        Button {
+                            deleteSelectedMathBox()
+                            isMathOptionsPresented = false
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                                .font(.system(size: 11, weight: .medium))
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(Palette.secondaryText)
+                    }
+                }
+                .padding(16)
+                .frame(width: 340)
+                .background(Palette.menu)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+        }
+    }
+
     private func updateSelectedBox(_ update: (inout PDFTextBox) -> Void) {
         guard let selectedBoxID,
               let index = annotations.textBoxes.firstIndex(where: { $0.id == selectedBoxID }) else {
@@ -418,10 +595,60 @@ struct PDFEditorView: View {
         editingBoxID = nil
     }
 
-    private func deleteSelectedBoxIfPossible() -> Bool {
-        guard editingBoxID == nil, selectedBoxID != nil else { return false }
-        deleteSelectedBox()
-        return true
+    private func updateSelectedMathBox(
+        recordUndo shouldRecordUndo: Bool = true,
+        _ update: (inout PDFMathBox) -> Void
+    ) {
+        guard let selectedMathBoxID,
+              let index = annotations.mathBoxes.firstIndex(where: { $0.id == selectedMathBoxID }) else {
+            return
+        }
+        var updated = annotations.mathBoxes[index]
+        update(&updated)
+        guard updated != annotations.mathBoxes[index] else { return }
+        if shouldRecordUndo {
+            recordUndo()
+        }
+        annotations.mathBoxes[index] = updated
+    }
+
+    private func setMathLatex(_ latex: String) {
+        guard selectedMathBox != nil else { return }
+        if !mathEditStarted {
+            recordUndo()
+            mathEditStarted = true
+        }
+        updateSelectedMathBox(recordUndo: false) { $0.latex = latex }
+    }
+
+    private func updateMathBox(_ updated: PDFMathBox) {
+        guard let index = annotations.mathBoxes.firstIndex(where: { $0.id == updated.id }),
+              annotations.mathBoxes[index] != updated else {
+            return
+        }
+        recordUndo()
+        annotations.mathBoxes[index] = updated
+    }
+
+    private func deleteSelectedMathBox() {
+        guard let selectedMathBoxID else { return }
+        recordUndo()
+        annotations.mathBoxes.removeAll { $0.id == selectedMathBoxID }
+        self.selectedMathBoxID = nil
+        editingBoxID = nil
+    }
+
+    private func deleteSelectedAnnotationIfPossible() -> Bool {
+        guard editingBoxID == nil else { return false }
+        if selectedBoxID != nil {
+            deleteSelectedBox()
+            return true
+        }
+        if selectedMathBoxID != nil {
+            deleteSelectedMathBox()
+            return true
+        }
+        return false
     }
 
     private func recordUndo() {
@@ -441,6 +668,11 @@ struct PDFEditorView: View {
            !annotations.textBoxes.contains(where: { $0.id == selectedBoxID }) {
             self.selectedBoxID = nil
         }
+        if let selectedMathBoxID,
+           !annotations.mathBoxes.contains(where: { $0.id == selectedMathBoxID }) {
+            self.selectedMathBoxID = nil
+            isMathOptionsPresented = false
+        }
     }
 
     private func redo() {
@@ -451,6 +683,11 @@ struct PDFEditorView: View {
         if let selectedBoxID,
            !annotations.textBoxes.contains(where: { $0.id == selectedBoxID }) {
             self.selectedBoxID = nil
+        }
+        if let selectedMathBoxID,
+           !annotations.mathBoxes.contains(where: { $0.id == selectedMathBoxID }) {
+            self.selectedMathBoxID = nil
+            isMathOptionsPresented = false
         }
     }
 
@@ -487,8 +724,38 @@ struct PDFEditorView: View {
         recordUndo()
         annotations.textBoxes.append(box)
         selectedBoxID = box.id
+        selectedMathBoxID = nil
         editingBoxID = box.id
         isPlacingTextBox = false
+        isPlacingMathBox = false
+        isMathOptionsPresented = false
+    }
+
+    private func addMathBox(at point: CGPoint) {
+        let width = 0.3
+        let height = 0.12
+        let x = min(max(0, point.x), 1 - width)
+        let y = min(max(0, point.y), 1 - height)
+        let box = PDFMathBox(
+            page: currentPage - 1,
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+            latex: ""
+        )
+        recordUndo()
+        annotations.mathBoxes.append(box)
+        selectedBoxID = nil
+        selectedMathBoxID = box.id
+        editingBoxID = nil
+        isPlacingTextBox = false
+        isPlacingMathBox = false
+        isTextOptionsPresented = false
+        mathEditStarted = false
+        DispatchQueue.main.async {
+            isMathOptionsPresented = true
+        }
     }
 
     private func updateBox(_ updated: PDFTextBox) {

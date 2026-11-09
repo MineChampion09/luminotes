@@ -36,6 +36,7 @@ struct PDFBlockView: View {
                     document: document,
                     pageIndex: currentPage - 1,
                     boxes: annotations.textBoxes,
+                    mathBoxes: annotations.mathBoxes,
                     editingBoxID: .constant(nil),
                     fitsHeight: 460
                 )

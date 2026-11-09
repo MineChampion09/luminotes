@@ -90,7 +90,7 @@ to `.ultraThinMaterial` and bordered buttons.
 - Math equation rendered from LaTeX
 - Mermaid diagram rendered from a fenced `mermaid` block
 - Image with a caption
-- PDF embeds rendered with PDFKit, with a full editor for editable text boxes
+- PDF embeds rendered with PDFKit, with a full editor for editable text boxes and LaTeX math boxes
 - Editable table with fit-content / fill-width layouts and add/remove rows and columns
 
 ## Writing behavior
@@ -122,12 +122,14 @@ to `.ultraThinMaterial` and bordered buttons.
 - Image embeds use `![[image.png]]`; PDF embeds use `![[file.pdf]]` and are
   rendered inline with PDFKit. The slash menu's **PDF** item lets you choose and
   embed a PDF directly; it is copied into the project's attachment folder. Use
-  the expand button on a PDF to open the full editor. Text boxes are stored in a custom `<pdf>.luminotes.json` sidecar, so
-  they remain editable, movable, resizable, and styleable without changing the
-  PDF itself. Their font, size, text color, and background color are edited in
-  a popover so the page does not shift. Use `⌘Z` / `⇧⌘Z` to undo or redo
-  annotation changes, and Backspace to delete a selected text box while not
-  editing its text. Saved text boxes appear over the PDF in the note.
+  the expand button on a PDF to open the full editor. Add editable text boxes
+  or LaTeX math boxes; both can be dragged and resized. Text boxes have font,
+  size, text color, and background controls, while math boxes have a LaTeX
+  editor, text color, and background controls. They are stored in a custom
+  `<pdf>.luminotes.json` sidecar, so they remain editable without changing the
+  PDF itself. Use `⌘Z` / `⇧⌘Z` to undo or redo annotation changes, and
+  Backspace to delete a selected box while not editing text. Saved boxes appear
+  over the PDF in the note.
 - Notion-style Markdown shortcuts:
   - `# ` through `###### ` for headings
   - `- `, `* `, `+ ` for bullets

@@ -78,13 +78,81 @@ struct PDFTextBox: Identifiable, Codable, Equatable, Hashable {
     }
 }
 
+struct PDFMathBox: Identifiable, Codable, Equatable, Hashable {
+    var id: UUID
+    var page: Int
+    var x: Double
+    var y: Double
+    var width: Double
+    var height: Double
+    var latex: String
+    var colorHex: String
+    var backgroundColorHex: String
+
+    init(
+        id: UUID = UUID(),
+        page: Int,
+        x: Double,
+        y: Double,
+        width: Double,
+        height: Double,
+        latex: String = "",
+        colorHex: String = "#000000",
+        backgroundColorHex: String = "#00000000"
+    ) {
+        self.id = id
+        self.page = page
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.latex = latex
+        self.colorHex = colorHex
+        self.backgroundColorHex = backgroundColorHex
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, page, x, y, width, height, latex, colorHex, backgroundColorHex
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        page = try container.decodeIfPresent(Int.self, forKey: .page) ?? 0
+        x = try container.decodeIfPresent(Double.self, forKey: .x) ?? 0.15
+        y = try container.decodeIfPresent(Double.self, forKey: .y) ?? 0.15
+        width = try container.decodeIfPresent(Double.self, forKey: .width) ?? 0.3
+        height = try container.decodeIfPresent(Double.self, forKey: .height) ?? 0.12
+        latex = try container.decodeIfPresent(String.self, forKey: .latex) ?? ""
+        colorHex = try container.decodeIfPresent(String.self, forKey: .colorHex) ?? "#000000"
+        backgroundColorHex = try container.decodeIfPresent(String.self, forKey: .backgroundColorHex) ?? "#00000000"
+    }
+}
+
 struct PDFAnnotationFile: Codable {
     var version: Int
     var textBoxes: [PDFTextBox]
+    var mathBoxes: [PDFMathBox]
 
-    init(version: Int = 1, textBoxes: [PDFTextBox] = []) {
+    init(
+        version: Int = 1,
+        textBoxes: [PDFTextBox] = [],
+        mathBoxes: [PDFMathBox] = []
+    ) {
         self.version = version
         self.textBoxes = textBoxes
+        self.mathBoxes = mathBoxes
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case version, textBoxes, mathBoxes
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        version = try container.decodeIfPresent(Int.self, forKey: .version) ?? 1
+        textBoxes = try container.decodeIfPresent([PDFTextBox].self, forKey: .textBoxes) ?? []
+        mathBoxes = try container.decodeIfPresent([PDFMathBox].self, forKey: .mathBoxes) ?? []
     }
 }
 
@@ -114,17 +182,24 @@ struct PDFPageCanvas: View {
     let document: PDFDocument
     let pageIndex: Int
     let boxes: [PDFTextBox]
+    var mathBoxes: [PDFMathBox] = []
     var isEditable = false
     var selectedBoxID: UUID?
+    var selectedMathBoxID: UUID?
     @Binding var editingBoxID: UUID?
     var zoom: CGFloat = 1
     var fitsHeight: CGFloat?
     var topInset: CGFloat = 0
     var isPlacingTextBox = false
+    var isPlacingMathBox = false
     var onPlaceTextBox: ((CGPoint) -> Void)?
+    var onPlaceMathBox: ((CGPoint) -> Void)?
     var onZoomChange: ((CGFloat) -> Void)?
     var onSelect: (UUID?) -> Void = { _ in }
     var onChange: (PDFTextBox) -> Void = { _ in }
+    var onSelectMath: (UUID?) -> Void = { _ in }
+    var onChangeMath: (PDFMathBox) -> Void = { _ in }
+    var onBeginEditingMath: (UUID) -> Void = { _ in }
 
     @State private var pageImage: NSImage?
     @State private var pageBounds: CGRect = .zero
@@ -157,8 +232,14 @@ struct PDFPageCanvas: View {
                         pageImage,
                         size: imageSize,
                         pannable: fitsHeight == nil,
-                        isPlacing: isPlacingTextBox,
-                        onPlace: onPlaceTextBox,
+                        isPlacing: isPlacingTextBox || isPlacingMathBox,
+                        onPlace: { point in
+                            if isPlacingTextBox {
+                                onPlaceTextBox?(point)
+                            } else if isPlacingMathBox {
+                                onPlaceMathBox?(point)
+                            }
+                        },
                         onBackgroundTap: isEditable ? { editingBoxID = nil } : nil
                     )
                         .frame(width: imageSize.width, height: imageSize.height)
@@ -179,7 +260,24 @@ struct PDFPageCanvas: View {
                         onChange: onChange
                     )
                     .frame(width: imageSize.width, height: imageSize.height)
-                    .allowsHitTesting(isEditable && !isPlacingTextBox)
+                    .allowsHitTesting(isEditable && !isPlacingTextBox && !isPlacingMathBox)
+
+                    PDFMathBoxOverlay(
+                        boxes: mathBoxes,
+                        page: pageIndex,
+                        geometry: PDFPageGeometry(
+                            pageRect: CGRect(origin: .zero, size: imageSize),
+                            pageBounds: pageBounds,
+                            pageIndex: pageIndex
+                        ),
+                        isEditable: isEditable,
+                        selectedBoxID: selectedMathBoxID,
+                        onSelect: onSelectMath,
+                        onChange: onChangeMath,
+                        onBeginEditing: onBeginEditingMath
+                    )
+                    .frame(width: imageSize.width, height: imageSize.height)
+                    .allowsHitTesting(isEditable && !isPlacingTextBox && !isPlacingMathBox)
                 }
                 .frame(width: imageSize.width, height: imageSize.height)
 
@@ -666,6 +764,311 @@ private struct PDFTextBoxView: View {
         updated.text = draft
         onChange(updated)
         editingBoxID = nil
+    }
+}
+
+struct PDFMathBoxOverlay: View {
+    let boxes: [PDFMathBox]
+    let page: Int
+    let geometry: PDFPageGeometry
+    var isEditable = false
+    var selectedBoxID: UUID?
+    var onSelect: (UUID?) -> Void = { _ in }
+    var onChange: (PDFMathBox) -> Void = { _ in }
+    var onBeginEditing: (UUID) -> Void = { _ in }
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            ForEach(boxes.filter { $0.page == page && (isEditable || !$0.latex.isEmpty) }) { box in
+                PDFMathBoxView(
+                    box: box,
+                    geometry: geometry,
+                    isEditable: isEditable,
+                    isSelected: selectedBoxID == box.id,
+                    onSelect: { onSelect(box.id) },
+                    onChange: onChange,
+                    onBeginEditing: { onBeginEditing(box.id) }
+                )
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .allowsHitTesting(isEditable)
+    }
+}
+
+private struct PDFMathBoxView: View {
+    let box: PDFMathBox
+    let geometry: PDFPageGeometry
+    let isEditable: Bool
+    let isSelected: Bool
+    let onSelect: () -> Void
+    let onChange: (PDFMathBox) -> Void
+    let onBeginEditing: () -> Void
+
+    @State private var dragOrigin: PDFMathBox?
+    @State private var dragTranslation: CGSize = .zero
+    @State private var resizeOrigin: PDFMathBox?
+    @State private var resizeTranslation: CGSize = .zero
+    @State private var resizeCorner: ResizeCorner?
+
+    private var pageScale: CGFloat {
+        guard geometry.pageBounds.width > 0 else { return 1 }
+        return geometry.pageRect.width / geometry.pageBounds.width
+    }
+
+    private var textColor: Color {
+        Color(hex: box.colorHex) ?? .black
+    }
+
+    private var backgroundColor: Color {
+        Color(hex: box.backgroundColorHex) ?? .clear
+    }
+
+    private var nsColor: NSColor {
+        guard let cgColor = textColor.cgColor,
+              let color = NSColor(cgColor: cgColor) else {
+            return .black
+        }
+        return color
+    }
+
+    private var mathImage: NSImage? {
+        guard !box.latex.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return nil
+        }
+        return MathImageRenderer.shared.image(
+            latex: box.latex,
+            fontSize: 24,
+            color: nsColor,
+            displayStyle: true
+        )
+    }
+
+    private var displayBox: PDFMathBox {
+        if let origin = resizeOrigin, let corner = resizeCorner {
+            return resizedBox(origin: origin, translation: resizeTranslation, corner: corner)
+        }
+        if let origin = dragOrigin {
+            return movedBox(origin: origin, translation: dragTranslation)
+        }
+        return box
+    }
+
+    private var displayRect: CGRect {
+        let current = displayBox
+        return CGRect(
+            x: geometry.pageRect.minX + current.x * geometry.pageRect.width,
+            y: geometry.pageRect.minY + current.y * geometry.pageRect.height,
+            width: current.width * geometry.pageRect.width,
+            height: current.height * geometry.pageRect.height
+        )
+    }
+
+    private var baseSize: CGSize {
+        let scale = max(pageScale, 0.0001)
+        return CGSize(
+            width: displayRect.width / scale,
+            height: displayRect.height / scale
+        )
+    }
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            boxContent
+                .frame(width: baseSize.width, height: baseSize.height, alignment: .center)
+                .clipped()
+                .scaleEffect(pageScale, anchor: .topLeading)
+                .frame(width: displayRect.width, height: displayRect.height, alignment: .topLeading)
+
+            if isEditable && isSelected {
+                Rectangle()
+                    .stroke(Color.accentColor, lineWidth: 1.5)
+                    .frame(width: displayRect.width, height: displayRect.height)
+                    .allowsHitTesting(false)
+
+                resizeHandle(.topLeft)
+                resizeHandle(.topRight)
+                resizeHandle(.bottomLeft)
+                resizeHandle(.bottomRight)
+            }
+        }
+        .frame(
+            width: displayRect.width,
+            height: displayRect.height,
+            alignment: .topLeading
+        )
+        .position(x: displayRect.midX, y: displayRect.midY)
+    }
+
+    @ViewBuilder
+    private var boxContent: some View {
+        Group {
+            if let mathImage {
+                Image(nsImage: mathImage)
+                    .resizable()
+                    .interpolation(.high)
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                Text(box.latex.isEmpty ? (isEditable ? "Math" : "") : box.latex)
+                    .font(.system(size: 12))
+                    .foregroundStyle(box.latex.isEmpty ? Color.secondary : textColor)
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            }
+        }
+        .padding(4)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(backgroundColor)
+        .contentShape(Rectangle())
+        .onTapGesture(count: 2) {
+            if isEditable { onBeginEditing() }
+        }
+        .onTapGesture {
+            if isEditable { onSelect() }
+        }
+        .gesture(isEditable ? moveGesture : nil)
+        .onHover { hovering in
+            guard isEditable else { return }
+            if hovering {
+                NSCursor.openHand.set()
+            } else {
+                NSCursor.arrow.set()
+            }
+        }
+    }
+
+    private var moveGesture: some Gesture {
+        DragGesture(minimumDistance: 2, coordinateSpace: .global)
+            .onChanged { value in
+                if dragOrigin == nil {
+                    dragOrigin = box
+                }
+                dragTranslation = value.translation
+            }
+            .onEnded { value in
+                guard let origin = dragOrigin else {
+                    dragTranslation = .zero
+                    return
+                }
+                let updated = movedBox(origin: origin, translation: value.translation)
+                onChange(updated)
+                dragOrigin = nil
+                dragTranslation = .zero
+            }
+    }
+
+    private func movedBox(origin: PDFMathBox, translation: CGSize) -> PDFMathBox {
+        guard geometry.pageRect.width > 0, geometry.pageRect.height > 0 else {
+            return origin
+        }
+        var updated = origin
+        let dx = translation.width / geometry.pageRect.width
+        let dy = translation.height / geometry.pageRect.height
+        updated.x = min(max(0, origin.x + dx), max(0, 1 - updated.width))
+        updated.y = min(max(0, origin.y + dy), max(0, 1 - updated.height))
+        return updated
+    }
+
+    private func resizeHandle(_ corner: ResizeCorner) -> some View {
+        let point: CGPoint
+        switch corner {
+        case .topLeft:
+            point = CGPoint(x: 6, y: 6)
+        case .topRight:
+            point = CGPoint(x: displayRect.width - 6, y: 6)
+        case .bottomLeft:
+            point = CGPoint(x: 6, y: displayRect.height - 6)
+        case .bottomRight:
+            point = CGPoint(x: displayRect.width - 6, y: displayRect.height - 6)
+        }
+
+        return RoundedRectangle(cornerRadius: 1.5, style: .continuous)
+            .fill(Color.white)
+            .overlay(
+                RoundedRectangle(cornerRadius: 1.5, style: .continuous)
+                    .stroke(Color.accentColor, lineWidth: 1)
+            )
+            .frame(width: 7, height: 7)
+            .frame(width: 18, height: 18)
+            .contentShape(Rectangle())
+            .position(point)
+            .gesture(resizeGesture(corner))
+            .onHover { hovering in
+                if hovering {
+                    NSCursor.crosshair.set()
+                } else {
+                    NSCursor.arrow.set()
+                }
+            }
+    }
+
+    private func resizeGesture(_ corner: ResizeCorner) -> some Gesture {
+        DragGesture(minimumDistance: 1, coordinateSpace: .global)
+            .onChanged { value in
+                if resizeOrigin == nil {
+                    resizeOrigin = box
+                    resizeCorner = corner
+                }
+                resizeTranslation = value.translation
+            }
+            .onEnded { value in
+                guard let origin = resizeOrigin, resizeCorner == corner else {
+                    resizeTranslation = .zero
+                    return
+                }
+                let updated = resizedBox(origin: origin, translation: value.translation, corner: corner)
+                onChange(updated)
+                resizeOrigin = nil
+                resizeTranslation = .zero
+                resizeCorner = nil
+            }
+    }
+
+    private func resizedBox(
+        origin: PDFMathBox,
+        translation: CGSize,
+        corner: ResizeCorner
+    ) -> PDFMathBox {
+        guard geometry.pageRect.width > 0, geometry.pageRect.height > 0 else {
+            return origin
+        }
+
+        let dx = translation.width / geometry.pageRect.width
+        let dy = translation.height / geometry.pageRect.height
+        let minWidth = 0.05
+        let minHeight = 0.03
+
+        var x = origin.x
+        var y = origin.y
+        var width = origin.width
+        var height = origin.height
+
+        switch corner {
+        case .bottomRight:
+            width = max(minWidth, origin.width + dx)
+            height = max(minHeight, origin.height + dy)
+        case .bottomLeft:
+            x = min(max(0, origin.x + dx), origin.x + origin.width - minWidth)
+            width = origin.x + origin.width - x
+            height = max(minHeight, origin.height + dy)
+        case .topRight:
+            width = max(minWidth, origin.width + dx)
+            y = min(max(0, origin.y + dy), origin.y + origin.height - minHeight)
+            height = origin.y + origin.height - y
+        case .topLeft:
+            x = min(max(0, origin.x + dx), origin.x + origin.width - minWidth)
+            width = origin.x + origin.width - x
+            y = min(max(0, origin.y + dy), origin.y + origin.height - minHeight)
+            height = origin.y + origin.height - y
+        }
+
+        var updated = origin
+        updated.x = x
+        updated.y = y
+        updated.width = min(max(minWidth, width), 1 - x)
+        updated.height = min(max(minHeight, height), 1 - y)
+        return updated
     }
 }
 
