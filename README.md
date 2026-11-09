@@ -112,6 +112,40 @@ to `.ultraThinMaterial` and bordered buttons.
 - Image with a caption and a zoomable viewer (double-click the image or use the header expand button)
 - PDF embeds rendered with PDFKit, with a full editor for editable text boxes and LaTeX math boxes
 - Editable table with fit-content / fill-width layouts and add/remove rows and columns
+- Notion-style database view of a project folder
+
+## Databases
+
+Any folder can be used as a Notion-style database. A folder becomes a database
+only when a **Database** block is inserted into a note and pointed at it; other
+folders stay normal folders in the sidebar.
+
+- Insert a database with `/database`, then choose a folder. The block header
+  switches between **Table**, **Board**, **List**, and **Gallery** layouts.
+- Direct children of the folder become rows. A database setting chooses whether
+  rows are **Notes**, **Assets**, or **All files**.
+- Clicking a note row opens it. Clicking an asset row opens it in its default app.
+  **New page** creates a Markdown row in the folder.
+- Properties are edited inline. The settings menu adds properties, chooses which
+  properties are visible, sorts, groups boards by a select property, and filters
+  rows. Board cards can be dragged between columns.
+- Supported property types: title, text, number, select, multi-select, date,
+  checkbox, URL, file type, created time, and last-edited time.
+- Note property values are stored in the note's YAML frontmatter, so they stay
+  portable and survive editing outside Luminotes. Unknown frontmatter keys are
+  preserved. Asset property values are stored in the folder's database config.
+- The schema, saved views, sorting, grouping, and filters live in
+  `<folder>/.luminotes/database.json`. The hidden `.luminotes` folder is skipped
+  by the project sidebar.
+- The block is written to Markdown as a fenced block, so the reference survives
+  a round-trip:
+
+  ````markdown
+  ```luminotes-db
+  folder: Dokumente
+  view: table
+  ```
+  ````
 
 ## Writing behavior
 

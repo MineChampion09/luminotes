@@ -172,6 +172,15 @@ struct SlashCommand: Identifiable, Equatable, Sendable {
             kind: .pdf
         ),
         SlashCommand(
+            id: "database",
+            title: "Database",
+            subtitle: "View a folder as a table, board, list, or gallery",
+            icon: "rectangle.3.group",
+            group: "Media",
+            keywords: ["database", "db", "table", "board", "gallery", "folder"],
+            kind: .turnInto(.database)
+        ),
+        SlashCommand(
             id: "table",
             title: "Table",
             subtitle: "A simple grid of cells",

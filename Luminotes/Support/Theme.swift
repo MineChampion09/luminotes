@@ -71,7 +71,7 @@ enum BlockTypography {
             return .monospacedSystemFont(ofSize: scaled(13.5), weight: .regular)
         case .image:
             return .systemFont(ofSize: scaled(13), weight: .regular)
-        case .divider, .table, .pdf, .mermaid:
+        case .divider, .table, .pdf, .mermaid, .database:
             return .systemFont(ofSize: scaled(14), weight: .regular)
         }
     }

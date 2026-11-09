@@ -180,6 +180,18 @@ enum MarkdownCodec {
                 lines.append("")
                 numberCounters = [:]
 
+            case .database:
+                if let path = block.databasePath, !path.isEmpty {
+                    lines.append("\(indent)```luminotes-db")
+                    lines.append("\(indent)folder: \(path)")
+                    if let view = block.databaseViewID, !view.isEmpty {
+                        lines.append("\(indent)view: \(view)")
+                    }
+                    lines.append("\(indent)```")
+                }
+                lines.append("")
+                numberCounters = [:]
+
             case .table:
                 guard let table = block.table, !table.rows.isEmpty else { continue }
                 let columns = table.columnCount

@@ -240,7 +240,32 @@ enum MarkdownParser {
                     index += 1
                 }
 
-                if fence.language.lowercased() == "mermaid" {
+                if fence.language.lowercased() == "luminotes-db" {
+                    var folder = ""
+                    var view = ""
+                    for line in codeLines {
+                        let parts = line.split(
+                            separator: ":",
+                            maxSplits: 1,
+                            omittingEmptySubsequences: false
+                        )
+                        guard parts.count == 2 else { continue }
+                        let key = parts[0].trimmingCharacters(in: .whitespaces)
+                        let value = parts[1].trimmingCharacters(in: .whitespaces)
+                        if key == "folder" {
+                            folder = value
+                        } else if key == "view" {
+                            view = value
+                        }
+                    }
+                    blocks.append(
+                        Block(
+                            type: .database,
+                            databasePath: folder.isEmpty ? nil : folder,
+                            databaseViewID: view.isEmpty ? nil : view
+                        )
+                    )
+                } else if fence.language.lowercased() == "mermaid" {
                     blocks.append(
                         Block(
                             type: .mermaid,

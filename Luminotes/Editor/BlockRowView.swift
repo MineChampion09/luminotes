@@ -50,7 +50,7 @@ struct BlockRowView: View {
         }
         .contextMenu {
             Menu("Turn into") {
-                ForEach(BlockType.allCases.filter { $0 != .pdf }) { type in
+                ForEach(BlockType.allCases.filter { $0 != .pdf && $0 != .database }) { type in
                     Button {
                         viewModel.turnInto(block.id, type: type)
                     } label: {
@@ -82,7 +82,7 @@ struct BlockRowView: View {
 
     private var topPadding: CGFloat {
         switch block.type {
-        case .divider, .image, .pdf, .mermaid, .table:
+        case .divider, .image, .pdf, .mermaid, .table, .database:
             return 8
         default:
             return BlockTypography.topPadding(for: block.type)
@@ -91,9 +91,9 @@ struct BlockRowView: View {
 
     private var bottomPadding: CGFloat {
         switch block.type {
-        case .table:
-            // The table's glass surface casts slightly below its layout frame;
-            // keep enough room so the next block never overlaps its edge.
+        case .table, .database:
+            // The glass surface casts slightly below its layout frame; keep
+            // enough room so the next block never overlaps its edge.
             return 16
         case .divider, .image, .pdf, .mermaid:
             return 8
@@ -105,7 +105,7 @@ struct BlockRowView: View {
     private var gutter: some View {
         HStack(spacing: 1) {
             Menu {
-                ForEach(BlockType.allCases.filter { $0 != .pdf }) { type in
+                ForEach(BlockType.allCases.filter { $0 != .pdf && $0 != .database }) { type in
                     Button {
                         viewModel.insertBlock(after: block.id, type: type)
                     } label: {
@@ -194,6 +194,9 @@ struct BlockRowView: View {
 
         case .table:
             TableBlockView(viewModel: viewModel, block: block)
+
+        case .database:
+            DatabaseBlockView(viewModel: viewModel, block: block)
 
         default:
             textBlock

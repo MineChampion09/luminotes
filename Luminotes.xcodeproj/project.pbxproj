@@ -42,6 +42,8 @@
 		B00000000000000000000A0 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000000000000000005F /* SettingsView.swift */; };
 		B00000000000000000000A1 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000060 /* UpdateChecker.swift */; };
 		B00000000000000000000A2 /* ImageViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000061 /* ImageViewer.swift */; };
+		B00000000000000000000A3 /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000062 /* Database.swift */; };
+		B00000000000000000000A4 /* DatabaseBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000063 /* DatabaseBlockView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -81,6 +83,8 @@
 		F000000000000000000005F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F0000000000000000000060 /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
 		F0000000000000000000061 /* ImageViewer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageViewer.swift; sourceTree = "<group>"; };
+		F0000000000000000000062 /* Database.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
+		F0000000000000000000063 /* DatabaseBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseBlockView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -123,6 +127,7 @@
 			isa = PBXGroup;
 			children = (
 				F0000000000000000000002 /* Block.swift */,
+				F0000000000000000000062 /* Database.swift */,
 				F0000000000000000000003 /* ProjectFile.swift */,
 				F0000000000000000000004 /* RichText.swift */,
 				F0000000000000000000005 /* SlashCommand.swift */,
@@ -135,6 +140,7 @@
 			children = (
 				F0000000000000000000006 /* BlockDropDelegate.swift */,
 				F0000000000000000000007 /* BlockRowView.swift */,
+				F0000000000000000000063 /* DatabaseBlockView.swift */,
 				F0000000000000000000008 /* EditorView.swift */,
 				F0000000000000000000009 /* EditorViewModel.swift */,
 				F000000000000000000000A /* MathBlockView.swift */,
@@ -293,6 +299,8 @@
 				B000000000000000000009F /* QuickOpenView.swift in Sources */,
 				B00000000000000000000A0 /* SettingsView.swift in Sources */,
 				B00000000000000000000A2 /* ImageViewer.swift in Sources */,
+				B00000000000000000000A3 /* Database.swift in Sources */,
+				B00000000000000000000A4 /* DatabaseBlockView.swift in Sources */,
 				B000000000000000000000F /* MarkdownCodec.swift in Sources */,
 				B0000000000000000000010 /* MarkdownParser.swift in Sources */,
 				B0000000000000000000011 /* NoteStore.swift in Sources */,

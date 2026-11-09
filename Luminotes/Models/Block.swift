@@ -21,6 +21,7 @@ enum BlockType: String, Codable, CaseIterable, Identifiable, Sendable {
     case pdf
     case mermaid
     case table
+    case database
 
     var id: String { rawValue }
 
@@ -46,6 +47,7 @@ enum BlockType: String, Codable, CaseIterable, Identifiable, Sendable {
         case .pdf: return "PDF"
         case .mermaid: return "Mermaid diagram"
         case .table: return "Table"
+        case .database: return "Database"
         }
     }
 
@@ -67,6 +69,7 @@ enum BlockType: String, Codable, CaseIterable, Identifiable, Sendable {
         case .pdf: return "doc.text"
         case .mermaid: return "flowchart"
         case .table: return "tablecells"
+        case .database: return "rectangle.3.group"
         }
     }
 
@@ -90,7 +93,7 @@ enum BlockType: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var hasTextEditor: Bool {
         switch self {
-        case .divider, .table, .pdf, .mermaid:
+        case .divider, .table, .pdf, .mermaid, .database:
             return false
         default:
             return true
@@ -99,7 +102,7 @@ enum BlockType: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var supportsInlineStyles: Bool {
         switch self {
-        case .divider, .table, .code, .math, .pdf, .mermaid:
+        case .divider, .table, .code, .math, .pdf, .mermaid, .database:
             return false
         default:
             return true
@@ -108,7 +111,7 @@ enum BlockType: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var isFocusableForNavigation: Bool {
         switch self {
-        case .divider, .table, .pdf, .mermaid:
+        case .divider, .table, .pdf, .mermaid, .database:
             return false
         default:
             return true
@@ -133,7 +136,7 @@ enum BlockType: String, Codable, CaseIterable, Identifiable, Sendable {
         case .code: return "Code"
         case .math: return "E = mc²"
         case .image: return "Write a caption…"
-        case .pdf, .mermaid, .divider, .table: return ""
+        case .pdf, .mermaid, .divider, .table, .database: return ""
         }
     }
 }
@@ -215,6 +218,8 @@ struct Block: Identifiable, Codable, Equatable, Hashable, Sendable {
     var pdfPath: String?
     var pdfPage: Int?
     var table: TableData?
+    var databasePath: String?
+    var databaseViewID: String?
     var calloutIcon: String
 
     init(
@@ -231,6 +236,8 @@ struct Block: Identifiable, Codable, Equatable, Hashable, Sendable {
         pdfPath: String? = nil,
         pdfPage: Int? = nil,
         table: TableData? = nil,
+        databasePath: String? = nil,
+        databaseViewID: String? = nil,
         calloutIcon: String = "💡"
     ) {
         self.id = id
@@ -246,6 +253,8 @@ struct Block: Identifiable, Codable, Equatable, Hashable, Sendable {
         self.pdfPath = pdfPath
         self.pdfPage = pdfPage
         self.table = table
+        self.databasePath = databasePath
+        self.databaseViewID = databaseViewID
         self.calloutIcon = calloutIcon
     }
 
@@ -264,6 +273,8 @@ struct Block: Identifiable, Codable, Equatable, Hashable, Sendable {
         pdfPath = try container.decodeIfPresent(String.self, forKey: .pdfPath)
         pdfPage = try container.decodeIfPresent(Int.self, forKey: .pdfPage)
         table = try container.decodeIfPresent(TableData.self, forKey: .table)
+        databasePath = try container.decodeIfPresent(String.self, forKey: .databasePath)
+        databaseViewID = try container.decodeIfPresent(String.self, forKey: .databaseViewID)
         calloutIcon = try container.decodeIfPresent(String.self, forKey: .calloutIcon) ?? "💡"
     }
 

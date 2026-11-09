@@ -468,6 +468,8 @@ final class EditorViewModel: ObservableObject {
             }
             note.blocks[index].imageAsset = nil
             note.blocks[index].imagePath = nil
+            note.blocks[index].databasePath = nil
+            note.blocks[index].databaseViewID = nil
             if type != .table {
                 note.blocks[index].table = nil
             }
@@ -860,6 +862,22 @@ final class EditorViewModel: ObservableObject {
                 return
             }
 
+            if type == .database {
+                mutateNote { note in
+                    note.blocks[index].type = .database
+                    note.blocks[index].text = .empty
+                    note.blocks[index].databasePath = nil
+                    note.blocks[index].databaseViewID = nil
+                    note.blocks[index].imageAsset = nil
+                    note.blocks[index].imagePath = nil
+                    note.blocks[index].table = nil
+                    note.blocks[index].checked = false
+                    note.blocks[index].collapsed = false
+                }
+                _ = insertParagraph(after: blockID)
+                return
+            }
+
             mutateNote { note in
                 note.blocks[index].type = type
                 note.blocks[index].text = cleanedText
@@ -873,6 +891,8 @@ final class EditorViewModel: ObservableObject {
                 }
                 note.blocks[index].imageAsset = nil
                 note.blocks[index].imagePath = nil
+                note.blocks[index].databasePath = nil
+                note.blocks[index].databaseViewID = nil
             }
 
             if type.isFocusableForNavigation {
@@ -1132,6 +1152,86 @@ final class EditorViewModel: ObservableObject {
             note.blocks[index].imageAsset = nil
             note.blocks[index].imagePath = nil
         }
+    }
+
+    // MARK: - Databases
+
+    func databaseFolders() -> [String] {
+        guard let projectURL else { return [] }
+        return DatabaseStore.listFolders(projectRoot: projectURL)
+    }
+
+    func setDatabasePath(_ path: String, for blockID: UUID) {
+        guard let index = note.blocks.firstIndex(where: { $0.id == blockID }) else { return }
+        mutateNote { note in
+            note.blocks[index].databasePath = path
+            note.blocks[index].databaseViewID = DatabaseLayout.table.rawValue
+        }
+    }
+
+    func setDatabaseViewID(_ viewID: String, for blockID: UUID) {
+        guard let index = note.blocks.firstIndex(where: { $0.id == blockID }) else { return }
+        mutateNote { note in
+            note.blocks[index].databaseViewID = viewID
+        }
+    }
+
+    func openDatabaseRow(_ row: DatabaseRow) {
+        if row.isMarkdown {
+            let file = projectFiles.first(where: {
+                $0.url.standardizedFileURL == row.url.standardizedFileURL
+            }) ?? ProjectFile(
+                url: row.url,
+                relativePath: row.relativePath,
+                modifiedAt: row.modifiedAt
+            )
+            openFile(file)
+        } else {
+            NSWorkspace.shared.open(row.url)
+        }
+    }
+
+    @discardableResult
+    func createDatabaseRow(in folderURL: URL, title: String = "Untitled") -> URL? {
+        do {
+            let url = try DatabaseStore.createRow(folderURL: folderURL, title: title)
+            refreshProjectFiles()
+            let relative = projectURL.map {
+                DatabaseStore.relativePath(from: $0, to: url)
+            } ?? url.lastPathComponent
+            let file = projectFiles.first(where: {
+                $0.url.standardizedFileURL == url.standardizedFileURL
+            }) ?? ProjectFile(
+                url: url,
+                relativePath: relative,
+                modifiedAt: Date()
+            )
+            openFile(file)
+            return url
+        } catch {
+            let alert = NSAlert()
+            alert.messageText = "Could not create database row"
+            alert.informativeText = error.localizedDescription
+            alert.runModal()
+            return nil
+        }
+    }
+
+    /// Keeps the open editor in sync when a database property is edited for
+    /// the note that is currently open. Returns true when the URL matched.
+    @discardableResult
+    func syncDatabasePropertyValue(_ value: String, propertyID: String, for url: URL) -> Bool {
+        guard currentFileURL?.standardizedFileURL == url.standardizedFileURL else {
+            return false
+        }
+        mutateNote { note in
+            let base = note.frontmatter ?? "---\n---\n"
+            note.frontmatter = DatabaseStore.updatingFrontmatter(
+                base,
+                values: [propertyID: value]
+            )
+        }
+        return true
     }
 
     // MARK: - Projects
