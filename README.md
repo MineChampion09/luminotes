@@ -124,8 +124,11 @@ folders stay normal folders in the sidebar.
   with a single **List** view; add **Table** or **Board** views as needed.
 - Direct children of the folder become rows. A database setting chooses whether
   rows are **Notes**, **Assets**, or **All files**.
-- Clicking a note row opens it. Clicking an asset row opens it in its default app.
-  **New page** creates a Markdown row in the folder.
+- Clicking a note row opens it. Clicking an asset row opens it in the built-in
+  image viewer or PDF editor. **New page** creates a Markdown row in the folder.
+- After opening a row, the back button in the top bar returns to the database
+  page it came from.
+- List rows show editable property values; click a value to edit it in place.
 - The search button in the header shows a search field that filters rows by title
   and property values; hide it again with the same button.
 - Properties are edited inline. The settings panel adds properties, chooses which

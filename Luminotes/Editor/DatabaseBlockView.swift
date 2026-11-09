@@ -763,6 +763,9 @@ struct DatabaseBlockView: View {
             properties: properties,
             groupProperty: groupProperty,
             config: config,
+            onSetValue: { property, value in
+                setValue(value, property: property, row: row)
+            },
             onOpen: { viewModel.openDatabaseRow(row) }
         )
     }
@@ -1507,53 +1510,82 @@ private struct DatabaseListRow: View {
     let properties: [DatabaseProperty]
     let groupProperty: DatabaseProperty?
     let config: DatabaseConfig
+    let onSetValue: (DatabaseProperty, String) -> Void
     let onOpen: () -> Void
 
     @State private var isHovering = false
 
-    private var pills: [DatabaseProperty] {
+    private var editableProperties: [DatabaseProperty] {
         properties.filter {
             $0.type != .title && $0.id != groupProperty?.id
         }
     }
 
     var body: some View {
-        Button(action: onOpen) {
-            HStack(spacing: 8) {
-                DatabaseRowIcon(row: row, size: 20)
+        HStack(spacing: 6) {
+            Button(action: onOpen) {
+                HStack(spacing: 8) {
+                    DatabaseRowIcon(row: row, size: 20)
 
-                Text(row.title)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Palette.primaryText)
-                    .lineLimit(1)
+                    Text(row.title)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Palette.primaryText)
+                        .lineLimit(1)
 
-                Spacer(minLength: 10)
-
-                ForEach(pills.prefix(3)) { property in
-                    DatabasePropertyPill(
-                        property: property,
-                        row: row,
-                        config: config,
-                        compact: true
-                    )
+                    Spacer(minLength: 0)
                 }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
+            ForEach(editableProperties) { property in
+                DatabaseCellView(
+                    row: row,
+                    property: property,
+                    config: config,
+                    onSetValue: { value in
+                        onSetValue(property, value)
+                    },
+                    onOpen: onOpen
+                )
+                .frame(width: listColumnWidth(for: property))
+            }
+
+            Button(action: onOpen) {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 8, weight: .semibold))
                     .foregroundStyle(Palette.tertiaryText)
-                    .opacity(isHovering ? 1 : 0)
+                    .frame(width: 16, height: 22)
+                    .contentShape(Rectangle())
             }
-            .padding(.horizontal, 11)
-            .frame(height: 36)
-            .background(isHovering ? Palette.hover.opacity(0.5) : Color.clear)
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+            .opacity(isHovering ? 1 : 0.35)
         }
-        .buttonStyle(.plain)
+        .padding(.horizontal, 11)
+        .frame(height: 38)
+        .background(isHovering ? Palette.hover.opacity(0.5) : Color.clear)
         .onHover { isHovering = $0 }
         .overlay(alignment: .bottom) {
             Rectangle()
                 .fill(Palette.border.opacity(0.4))
                 .frame(height: 0.6)
+        }
+    }
+
+    private func listColumnWidth(for property: DatabaseProperty) -> CGFloat {
+        switch property.type {
+        case .title: return 180
+        case .text: return 150
+        case .number: return 80
+        case .select: return 120
+        case .multiSelect: return 150
+        case .date: return 120
+        case .checkbox: return 80
+        case .url: return 160
+        case .fileType: return 90
+        case .createdTime, .lastEditedTime: return 130
+        case .formula: return 140
         }
     }
 }

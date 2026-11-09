@@ -43,6 +43,12 @@ final class EditorViewModel: ObservableObject {
     @Published private(set) var projectFiles: [ProjectFile] = []
     @Published private(set) var selectedFileID: String?
     @Published private(set) var currentFileURL: URL?
+    @Published var presentedAsset: ProjectFile?
+    @Published private(set) var navigationStack: [ProjectFile] = []
+
+    var canGoBack: Bool {
+        !navigationStack.isEmpty
+    }
 
     let store: NoteStore
 
@@ -1177,17 +1183,22 @@ final class EditorViewModel: ObservableObject {
     }
 
     func openDatabaseRow(_ row: DatabaseRow) {
+        let file = projectFiles.first(where: {
+            $0.url.standardizedFileURL == row.url.standardizedFileURL
+        }) ?? ProjectFile(
+            url: row.url,
+            relativePath: row.relativePath,
+            modifiedAt: row.modifiedAt
+        )
+
         if row.isMarkdown {
-            let file = projectFiles.first(where: {
-                $0.url.standardizedFileURL == row.url.standardizedFileURL
-            }) ?? ProjectFile(
-                url: row.url,
-                relativePath: row.relativePath,
-                modifiedAt: row.modifiedAt
-            )
-            openFile(file)
+            guard currentFileURL?.standardizedFileURL != row.url.standardizedFileURL else {
+                return
+            }
+            pushCurrentFileForBackNavigation()
+            openFile(file, skipSave: false)
         } else {
-            NSWorkspace.shared.open(row.url)
+            presentAsset(file)
         }
     }
 
@@ -1214,7 +1225,8 @@ final class EditorViewModel: ObservableObject {
                 relativePath: relative,
                 modifiedAt: Date()
             )
-            openFile(file)
+            pushCurrentFileForBackNavigation()
+            openFile(file, skipSave: false)
             return url
         } catch {
             let alert = NSAlert()
@@ -1293,6 +1305,8 @@ final class EditorViewModel: ObservableObject {
         focusedBlockID = nil
         slashMenu = nil
         dropTarget = nil
+        navigationStack.removeAll()
+        presentedAsset = nil
 
         UserDefaults.standard.set(standardized.path, forKey: Self.lastProjectPathKey)
         UserDefaults.standard.removeObject(forKey: Self.lastSelectedPathKey)
@@ -1326,6 +1340,8 @@ final class EditorViewModel: ObservableObject {
         focusRequest = nil
         slashMenu = nil
         dropTarget = nil
+        navigationStack.removeAll()
+        presentedAsset = nil
         hasUnsavedChanges = false
         saveState = .saved
         if let first = note.blocks.first(where: { $0.type.isFocusableForNavigation }) {
@@ -1359,10 +1375,37 @@ final class EditorViewModel: ObservableObject {
 
     func openFile(_ file: ProjectFile) {
         guard file.isMarkdown else {
-            NSWorkspace.shared.open(file.url)
+            presentAsset(file)
             return
         }
+        navigationStack.removeAll()
         openFile(file, skipSave: false)
+    }
+
+    func presentAsset(_ file: ProjectFile) {
+        guard file.isAsset else { return }
+        presentedAsset = file
+    }
+
+    func goBack() {
+        guard let previous = navigationStack.popLast() else { return }
+        openFile(previous, skipSave: false)
+    }
+
+    private func pushCurrentFileForBackNavigation() {
+        guard let currentFileURL, let projectURL else { return }
+        if navigationStack.last?.url.standardizedFileURL == currentFileURL.standardizedFileURL {
+            return
+        }
+        let relative = DatabaseStore.relativePath(from: projectURL, to: currentFileURL)
+        let file = projectFiles.first(where: {
+            $0.url.standardizedFileURL == currentFileURL.standardizedFileURL
+        }) ?? ProjectFile(
+            url: currentFileURL,
+            relativePath: relative,
+            modifiedAt: Date()
+        )
+        navigationStack.append(file)
     }
 
     private func openFile(_ file: ProjectFile, skipSave: Bool) {
@@ -1520,6 +1563,7 @@ final class EditorViewModel: ObservableObject {
         projectURL = url
         projectStore = ProjectStore(folderURL: url)
         refreshProjectFiles()
+        navigationStack.removeAll()
 
         // Restore the note the user last had open, but never pick one for them.
         guard let preferred = UserDefaults.standard.string(forKey: Self.lastSelectedPathKey),

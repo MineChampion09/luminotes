@@ -31,6 +31,9 @@ struct RootView: View {
             }
         }
         .animation(.easeOut(duration: 0.12), value: viewModel.isQuickOpenPresented)
+        .sheet(item: $viewModel.presentedAsset) { file in
+            AssetViewerView(file: file)
+        }
     }
 
     @ViewBuilder
@@ -141,4 +144,42 @@ private struct WindowConfigurator: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: NSView, context: Context) {}
+}
+
+private struct AssetViewerView: View {
+    let file: ProjectFile
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        Group {
+            if file.isImage {
+                if let image = NSImage(contentsOf: file.url) {
+                    ImageViewer(image: image, title: file.displayName)
+                } else {
+                    unavailable
+                }
+            } else if file.isPDF {
+                PDFEditorView(url: file.url, title: file.displayName)
+            } else {
+                unavailable
+            }
+        }
+    }
+
+    private var unavailable: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 22, weight: .light))
+                .foregroundStyle(Palette.tertiaryText)
+            Text("Could not open \(file.displayName)")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Palette.secondaryText)
+            Button("Close") {
+                dismiss()
+            }
+            .glassButtonStyle()
+        }
+        .frame(width: 360, height: 220)
+    }
 }

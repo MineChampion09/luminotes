@@ -137,6 +137,20 @@ struct EditorView: View {
 
     private var topBar: some View {
         HStack(spacing: 9) {
+            if viewModel.canGoBack {
+                Button {
+                    viewModel.goBack()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 11.5, weight: .semibold))
+                        .foregroundStyle(Palette.secondaryText)
+                        .frame(width: 24, height: 22)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help("Back to database")
+            }
+
             Button {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     viewModel.toggleSidebar()
