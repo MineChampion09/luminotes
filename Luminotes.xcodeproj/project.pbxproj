@@ -44,6 +44,9 @@
 		B00000000000000000000A2 /* ImageViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000061 /* ImageViewer.swift */; };
 		B00000000000000000000A3 /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000062 /* Database.swift */; };
 		B00000000000000000000A4 /* DatabaseBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000063 /* DatabaseBlockView.swift */; };
+		B00000000000000000000A5 /* DatabaseFormula.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000064 /* DatabaseFormula.swift */; };
+		B00000000000000000000A6 /* DatabaseComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000065 /* DatabaseComponents.swift */; };
+		B00000000000000000000A7 /* DatabaseSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000066 /* DatabaseSettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -85,6 +88,9 @@
 		F0000000000000000000061 /* ImageViewer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageViewer.swift; sourceTree = "<group>"; };
 		F0000000000000000000062 /* Database.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
 		F0000000000000000000063 /* DatabaseBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseBlockView.swift; sourceTree = "<group>"; };
+		F0000000000000000000064 /* DatabaseFormula.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseFormula.swift; sourceTree = "<group>"; };
+		F0000000000000000000065 /* DatabaseComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseComponents.swift; sourceTree = "<group>"; };
+		F0000000000000000000066 /* DatabaseSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseSettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -128,6 +134,7 @@
 			children = (
 				F0000000000000000000002 /* Block.swift */,
 				F0000000000000000000062 /* Database.swift */,
+				F0000000000000000000064 /* DatabaseFormula.swift */,
 				F0000000000000000000003 /* ProjectFile.swift */,
 				F0000000000000000000004 /* RichText.swift */,
 				F0000000000000000000005 /* SlashCommand.swift */,
@@ -141,6 +148,8 @@
 				F0000000000000000000006 /* BlockDropDelegate.swift */,
 				F0000000000000000000007 /* BlockRowView.swift */,
 				F0000000000000000000063 /* DatabaseBlockView.swift */,
+				F0000000000000000000065 /* DatabaseComponents.swift */,
+				F0000000000000000000066 /* DatabaseSettingsView.swift */,
 				F0000000000000000000008 /* EditorView.swift */,
 				F0000000000000000000009 /* EditorViewModel.swift */,
 				F000000000000000000000A /* MathBlockView.swift */,
@@ -301,6 +310,9 @@
 				B00000000000000000000A2 /* ImageViewer.swift in Sources */,
 				B00000000000000000000A3 /* Database.swift in Sources */,
 				B00000000000000000000A4 /* DatabaseBlockView.swift in Sources */,
+				B00000000000000000000A5 /* DatabaseFormula.swift in Sources */,
+				B00000000000000000000A6 /* DatabaseComponents.swift in Sources */,
+				B00000000000000000000A7 /* DatabaseSettingsView.swift in Sources */,
 				B000000000000000000000F /* MarkdownCodec.swift in Sources */,
 				B0000000000000000000010 /* MarkdownParser.swift in Sources */,
 				B0000000000000000000011 /* NoteStore.swift in Sources */,

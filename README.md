@@ -126,11 +126,17 @@ folders stay normal folders in the sidebar.
   rows are **Notes**, **Assets**, or **All files**.
 - Clicking a note row opens it. Clicking an asset row opens it in its default app.
   **New page** creates a Markdown row in the folder.
-- Properties are edited inline. The settings menu adds properties, chooses which
+- Properties are edited inline. The settings panel adds properties, chooses which
   properties are visible, sorts, groups boards by a select property, and filters
   rows. Board cards can be dragged between columns.
 - Supported property types: title, text, number, select, multi-select, date,
-  checkbox, URL, file type, created time, and last-edited time.
+  checkbox, URL, file type, created time, last-edited time, and formula.
+- Formulas use a small expression language with `prop("Name")` references,
+  arithmetic, comparisons, and functions such as `if`, `round`, `concat`,
+  `dateFormat`, `year`, and `contains`.
+- Opening a row note shows its database properties at the top of the page, so
+  attributes can be edited from the note itself as well as from the database
+  block.
 - Note property values are stored in the note's YAML frontmatter, so they stay
   portable and survive editing outside Luminotes. Unknown frontmatter keys are
   preserved. Asset property values are stored in the folder's database config.

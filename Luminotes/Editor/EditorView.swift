@@ -22,6 +22,7 @@ struct EditorView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         titleField
+                        noteProperties
                         blockList
                         addBlockSpace
                     }
@@ -283,6 +284,13 @@ struct EditorView: View {
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
         .help("Note actions")
+    }
+
+    @ViewBuilder
+    private var noteProperties: some View {
+        if let fileURL = viewModel.currentFileURL {
+            NoteDatabasePropertiesView(viewModel: viewModel, fileURL: fileURL)
+        }
     }
 
     private var titleField: some View {

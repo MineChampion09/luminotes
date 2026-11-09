@@ -12,6 +12,7 @@ enum DatabasePropertyType: String, Codable, CaseIterable, Identifiable, Sendable
     case fileType
     case createdTime
     case lastEditedTime
+    case formula
 
     var id: String { rawValue }
 
@@ -28,12 +29,30 @@ enum DatabasePropertyType: String, Codable, CaseIterable, Identifiable, Sendable
         case .fileType: return "File type"
         case .createdTime: return "Created time"
         case .lastEditedTime: return "Last edited"
+        case .formula: return "Formula"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .title: return "textformat"
+        case .text: return "text.alignleft"
+        case .number: return "number"
+        case .select: return "tag"
+        case .multiSelect: return "tag.fill"
+        case .date: return "calendar"
+        case .checkbox: return "checkmark.square"
+        case .url: return "link"
+        case .fileType: return "doc"
+        case .createdTime: return "clock"
+        case .lastEditedTime: return "clock.arrow.circlepath"
+        case .formula: return "function"
         }
     }
 
     var isComputed: Bool {
         switch self {
-        case .title, .fileType, .createdTime, .lastEditedTime:
+        case .title, .fileType, .createdTime, .lastEditedTime, .formula:
             return true
         default:
             return false
@@ -43,6 +62,11 @@ enum DatabasePropertyType: String, Codable, CaseIterable, Identifiable, Sendable
     var supportsOptions: Bool {
         self == .select || self == .multiSelect
     }
+
+    /// Property types that can be chosen when creating a new property.
+    static var creatable: [DatabasePropertyType] {
+        allCases.filter { $0 != .title && $0 != .createdTime && $0 != .lastEditedTime }
+    }
 }
 
 struct DatabaseProperty: Identifiable, Codable, Equatable, Hashable, Sendable {
@@ -50,21 +74,24 @@ struct DatabaseProperty: Identifiable, Codable, Equatable, Hashable, Sendable {
     var name: String
     var type: DatabasePropertyType
     var options: [String]
+    var formula: String
 
     init(
         id: String = UUID().uuidString,
         name: String,
         type: DatabasePropertyType,
-        options: [String] = []
+        options: [String] = [],
+        formula: String = ""
     ) {
         self.id = id
         self.name = name
         self.type = type
         self.options = options
+        self.formula = formula
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, type, options
+        case id, name, type, options, formula
     }
 
     init(from decoder: Decoder) throws {
@@ -73,6 +100,7 @@ struct DatabaseProperty: Identifiable, Codable, Equatable, Hashable, Sendable {
         name = try container.decodeIfPresent(String.self, forKey: .name) ?? "Property"
         type = try container.decodeIfPresent(DatabasePropertyType.self, forKey: .type) ?? .text
         options = try container.decodeIfPresent([String].self, forKey: .options) ?? []
+        formula = try container.decodeIfPresent(String.self, forKey: .formula) ?? ""
     }
 }
 
@@ -189,15 +217,65 @@ struct DatabaseFilter: Identifiable, Codable, Equatable, Hashable, Sendable {
     }
 }
 
+struct DatabaseSort: Identifiable, Codable, Equatable, Hashable, Sendable {
+    var id: String
+    var propertyID: String
+    var ascending: Bool
+
+    init(
+        id: String = UUID().uuidString,
+        propertyID: String,
+        ascending: Bool = true
+    ) {
+        self.id = id
+        self.propertyID = propertyID
+        self.ascending = ascending
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, propertyID, ascending
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
+        propertyID = try container.decodeIfPresent(String.self, forKey: .propertyID) ?? ""
+        ascending = try container.decodeIfPresent(Bool.self, forKey: .ascending) ?? true
+    }
+}
+
 struct DatabaseView: Identifiable, Codable, Equatable, Hashable, Sendable {
     var id: String
     var name: String
     var layout: DatabaseLayout
     var visiblePropertyIDs: [String]
-    var sortPropertyID: String?
-    var sortAscending: Bool
     var groupPropertyID: String?
     var filters: [DatabaseFilter]
+    var sorts: [DatabaseSort]
+
+    /// Legacy single-sort accessors kept for configs written by older builds.
+    var sortPropertyID: String? {
+        get { sorts.first?.propertyID }
+        set {
+            if let newValue {
+                if sorts.isEmpty {
+                    sorts = [DatabaseSort(propertyID: newValue)]
+                } else {
+                    sorts[0].propertyID = newValue
+                }
+            } else {
+                sorts.removeAll()
+            }
+        }
+    }
+
+    var sortAscending: Bool {
+        get { sorts.first?.ascending ?? true }
+        set {
+            guard !sorts.isEmpty else { return }
+            sorts[0].ascending = newValue
+        }
+    }
 
     init(
         id: String,
@@ -207,20 +285,27 @@ struct DatabaseView: Identifiable, Codable, Equatable, Hashable, Sendable {
         sortPropertyID: String? = nil,
         sortAscending: Bool = true,
         groupPropertyID: String? = nil,
-        filters: [DatabaseFilter] = []
+        filters: [DatabaseFilter] = [],
+        sorts: [DatabaseSort] = []
     ) {
         self.id = id
         self.name = name
         self.layout = layout
         self.visiblePropertyIDs = visiblePropertyIDs
-        self.sortPropertyID = sortPropertyID
-        self.sortAscending = sortAscending
         self.groupPropertyID = groupPropertyID
         self.filters = filters
+        if sorts.isEmpty, let sortPropertyID {
+            self.sorts = [
+                DatabaseSort(propertyID: sortPropertyID, ascending: sortAscending)
+            ]
+        } else {
+            self.sorts = sorts
+        }
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, layout, visiblePropertyIDs, sortPropertyID, sortAscending, groupPropertyID, filters
+        case id, name, layout, visiblePropertyIDs, sortPropertyID, sortAscending
+        case groupPropertyID, filters, sorts
     }
 
     init(from decoder: Decoder) throws {
@@ -229,10 +314,29 @@ struct DatabaseView: Identifiable, Codable, Equatable, Hashable, Sendable {
         name = try container.decodeIfPresent(String.self, forKey: .name) ?? "View"
         layout = try container.decodeIfPresent(DatabaseLayout.self, forKey: .layout) ?? .table
         visiblePropertyIDs = try container.decodeIfPresent([String].self, forKey: .visiblePropertyIDs) ?? []
-        sortPropertyID = try container.decodeIfPresent(String.self, forKey: .sortPropertyID)
-        sortAscending = try container.decodeIfPresent(Bool.self, forKey: .sortAscending) ?? true
         groupPropertyID = try container.decodeIfPresent(String.self, forKey: .groupPropertyID)
         filters = try container.decodeIfPresent([DatabaseFilter].self, forKey: .filters) ?? []
+        if let decodedSorts = try container.decodeIfPresent([DatabaseSort].self, forKey: .sorts),
+           !decodedSorts.isEmpty {
+            sorts = decodedSorts
+        } else if let legacyPropertyID = try container.decodeIfPresent(String.self, forKey: .sortPropertyID),
+                  !legacyPropertyID.isEmpty {
+            let ascending = try container.decodeIfPresent(Bool.self, forKey: .sortAscending) ?? true
+            sorts = [DatabaseSort(propertyID: legacyPropertyID, ascending: ascending)]
+        } else {
+            sorts = []
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(layout, forKey: .layout)
+        try container.encode(visiblePropertyIDs, forKey: .visiblePropertyIDs)
+        try container.encodeIfPresent(groupPropertyID, forKey: .groupPropertyID)
+        try container.encode(filters, forKey: .filters)
+        try container.encode(sorts, forKey: .sorts)
     }
 }
 
@@ -335,6 +439,7 @@ struct DatabaseRow: Identifiable, Equatable, Sendable {
     let title: String
     let fileExtension: String
     let isMarkdown: Bool
+    let createdAt: Date
     let modifiedAt: Date
     var values: [String: String]
 
@@ -360,15 +465,39 @@ struct DatabaseRow: Identifiable, Equatable, Sendable {
             return title
         case .fileType:
             return fileTypeLabel
-        case .createdTime, .lastEditedTime:
+        case .createdTime:
+            return Self.dateFormatter.string(from: createdAt)
+        case .lastEditedTime:
             return Self.dateFormatter.string(from: modifiedAt)
+        case .formula:
+            return ""
         default:
             return values[property.id] ?? ""
         }
     }
 
+    func rawValue(for property: DatabaseProperty, config: DatabaseConfig) -> String {
+        if property.type == .formula {
+            return DatabaseFormula.evaluate(property: property, row: self, config: config)
+        }
+        return rawValue(for: property)
+    }
+
     func displayValue(for property: DatabaseProperty) -> String {
         let value = rawValue(for: property)
+        switch property.type {
+        case .checkbox:
+            return value == "true" ? "Yes" : "No"
+        case .date:
+            guard let date = Self.isoFormatter.date(from: value) else { return value }
+            return Self.displayDateFormatter.string(from: date)
+        default:
+            return value
+        }
+    }
+
+    func displayValue(for property: DatabaseProperty, config: DatabaseConfig) -> String {
+        let value = rawValue(for: property, config: config)
         switch property.type {
         case .checkbox:
             return value == "true" ? "Yes" : "No"
@@ -483,7 +612,9 @@ enum DatabaseStore {
     ) throws -> [DatabaseRow] {
         let files = try FileManager.default.contentsOfDirectory(
             at: folderURL,
-            includingPropertiesForKeys: [.isRegularFileKey, .contentModificationDateKey],
+            includingPropertiesForKeys: [
+                .isRegularFileKey, .contentModificationDateKey, .creationDateKey
+            ],
             options: [.skipsHiddenFiles, .skipsPackageDescendants]
         )
 
@@ -495,7 +626,9 @@ enum DatabaseStore {
 
         var rows: [DatabaseRow] = []
         for url in files {
-            let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .contentModificationDateKey])
+            let values = try? url.resourceValues(forKeys: [
+                .isRegularFileKey, .contentModificationDateKey, .creationDateKey
+            ])
             guard values?.isRegularFile == true else { continue }
             let ext = url.pathExtension.lowercased()
             let isMarkdown = markdownExtensions.contains(ext)
@@ -527,6 +660,7 @@ enum DatabaseStore {
                         : url.lastPathComponent,
                     fileExtension: ext,
                     isMarkdown: isMarkdown,
+                    createdAt: values?.creationDate ?? values?.contentModificationDate ?? .distantPast,
                     modifiedAt: values?.contentModificationDate ?? .distantPast,
                     values: propertyValues
                 )
@@ -546,7 +680,7 @@ enum DatabaseStore {
         guard let property = config.property(for: filter.propertyID) else {
             return true
         }
-        let raw = row.rawValue(for: property)
+        let raw = row.rawValue(for: property, config: config)
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let needle = filter.value
             .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -587,7 +721,8 @@ enum DatabaseStore {
         row: DatabaseRow,
         config: DatabaseConfig,
         folderURL: URL
-    ) throws -> DatabaseConfig {        guard !property.type.isComputed else { return config }
+    ) throws -> DatabaseConfig {
+        guard !property.type.isComputed else { return config }
 
         if row.isMarkdown {
             var markdown = (try? String(contentsOf: row.url, encoding: .utf8)) ?? ""
@@ -608,7 +743,11 @@ enum DatabaseStore {
         return updated
     }
 
-    static func createRow(folderURL: URL, title: String) throws -> URL {
+    static func createRow(
+        folderURL: URL,
+        title: String,
+        values: [String: String] = [:]
+    ) throws -> URL {
         let base = sanitizedFilename(title).isEmpty ? "Untitled" : sanitizedFilename(title)
         var candidate = folderURL.appendingPathComponent("\(base).md")
         var counter = 2
@@ -616,7 +755,12 @@ enum DatabaseStore {
             candidate = folderURL.appendingPathComponent("\(base) \(counter).md")
             counter += 1
         }
-        try Data().write(to: candidate, options: .atomic)
+        if values.isEmpty {
+            try Data().write(to: candidate, options: .atomic)
+        } else {
+            let markdown = updatingFrontmatter("", values: values)
+            try markdown.write(to: candidate, atomically: true, encoding: .utf8)
+        }
         return candidate
     }
 

@@ -1192,9 +1192,17 @@ final class EditorViewModel: ObservableObject {
     }
 
     @discardableResult
-    func createDatabaseRow(in folderURL: URL, title: String = "Untitled") -> URL? {
+    func createDatabaseRow(
+        in folderURL: URL,
+        title: String = "Untitled",
+        values: [String: String] = [:]
+    ) -> URL? {
         do {
-            let url = try DatabaseStore.createRow(folderURL: folderURL, title: title)
+            let url = try DatabaseStore.createRow(
+                folderURL: folderURL,
+                title: title,
+                values: values
+            )
             refreshProjectFiles()
             let relative = projectURL.map {
                 DatabaseStore.relativePath(from: $0, to: url)
@@ -1232,6 +1240,19 @@ final class EditorViewModel: ObservableObject {
             )
         }
         return true
+    }
+
+    /// Updates a database property on the note that is currently open. The
+    /// value is written to frontmatter and saved with the note.
+    func setNoteDatabaseValue(_ value: String, for property: DatabaseProperty) {
+        guard !property.type.isComputed else { return }
+        mutateNote { note in
+            let base = note.frontmatter ?? "---\n---\n"
+            note.frontmatter = DatabaseStore.updatingFrontmatter(
+                base,
+                values: [property.id: value]
+            )
+        }
     }
 
     // MARK: - Projects
