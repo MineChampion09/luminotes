@@ -37,6 +37,15 @@ The app can check for and install the latest release from **Settings → Updates
 (`⌘,`). Settings are stored in `UserDefaults` outside the app bundle, so they
 persist across updates.
 
+### macOS folder permissions
+
+If macOS asks for access to **Desktop**, **Documents**, or **Downloads**, it is
+protecting the folder that contains your project. Grant access once; the
+permission is tied to the app’s code signature. For stable permissions across
+updates, configure `MACOS_CERT_P12` (base64-encoded `.p12`) and
+`MACOS_CERT_PASSWORD` repository secrets so release builds are signed with the
+same identity. Without them, releases fall back to ad-hoc signing.
+
 ## Projects
 
 - Press **⌘O** or click **Choose Folder…** to open any folder as a project.
