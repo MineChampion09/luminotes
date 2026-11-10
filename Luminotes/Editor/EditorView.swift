@@ -152,7 +152,7 @@ struct EditorView: View {
         }
         .buttonStyle(.plainPointer)
         .glassPanel(cornerRadius: 10)
-        .padding(.leading, viewModel.isSidebarVisible ? 16 : 92)
+        .padding(.leading, (viewModel.isSidebarVisible ? 16 : 92) + 49)
         .padding(.top, 54)
         .help("Back to database")
     }
