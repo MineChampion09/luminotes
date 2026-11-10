@@ -2,35 +2,48 @@ import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
-struct BlockRowView: View {
-    @ObservedObject var viewModel: EditorViewModel
+struct BlockRowView: View, Equatable {
+    let viewModel: EditorViewModel
     let block: Block
     let number: Int?
     var tracksFrame = true
+    let isMenuOpen: Bool
+    let dropBefore: Bool
+    let focusRequest: FocusRequest?
 
     @State private var isHovering = false
 
-    private var isMenuOpen: Bool {
-        viewModel.slashMenu?.blockID == block.id
+    static func == (lhs: BlockRowView, rhs: BlockRowView) -> Bool {
+        lhs.block == rhs.block &&
+            lhs.number == rhs.number &&
+            lhs.tracksFrame == rhs.tracksFrame &&
+            lhs.isMenuOpen == rhs.isMenuOpen &&
+            lhs.dropBefore == rhs.dropBefore &&
+            lhs.focusRequest == rhs.focusRequest &&
+            lhs.viewModel === rhs.viewModel
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 0) {
+        HStack(alignment: .top, spacing: 8) {
             gutter
                 .frame(width: 58, alignment: .leading)
                 .padding(.top, 1)
 
             content
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 8)
         }
-        .padding(.leading, CGFloat(block.indent) * 26)
-        .padding(.top, topPadding)
-        .padding(.bottom, bottomPadding)
+        .padding(
+            EdgeInsets(
+                top: topPadding,
+                leading: CGFloat(block.indent) * 26,
+                bottom: bottomPadding,
+                trailing: 0
+            )
+        )
         .contentShape(Rectangle())
         .onHover { isHovering = $0 }
         .overlay(alignment: .top) {
-            if viewModel.dropTarget == .before(block.id) {
+            if dropBefore {
                 Rectangle()
                     .fill(Color.accentColor)
                     .frame(height: 2)
@@ -75,7 +88,10 @@ struct BlockRowView: View {
             delegate: BlockDropDelegate(
                 targetID: block.id,
                 viewModel: viewModel,
-                dropTarget: $viewModel.dropTarget
+                dropTarget: Binding(
+                    get: { viewModel.dropTarget },
+                    set: { viewModel.dropTarget = $0 }
+                )
             )
         )
     }
@@ -104,73 +120,73 @@ struct BlockRowView: View {
 
     private var gutter: some View {
         HStack(spacing: 1) {
-            Menu {
-                ForEach(BlockType.allCases.filter { $0 != .pdf && $0 != .database }) { type in
+            if isHovering || isMenuOpen {
+                Menu {
+                    ForEach(BlockType.allCases.filter { $0 != .pdf && $0 != .database }) { type in
+                        Button {
+                            viewModel.insertBlock(after: block.id, type: type)
+                        } label: {
+                            Label(type.title, systemImage: type.icon)
+                        }
+                    }
+                    Divider()
                     Button {
-                        viewModel.insertBlock(after: block.id, type: type)
+                        viewModel.duplicateBlock(block.id)
                     } label: {
-                        Label(type.title, systemImage: type.icon)
+                        Label("Duplicate block", systemImage: "square.on.square")
                     }
-                }
-                Divider()
-                Button {
-                    viewModel.duplicateBlock(block.id)
+                    Button(role: .destructive) {
+                        viewModel.deleteBlock(block.id)
+                    } label: {
+                        Label("Delete block", systemImage: "trash")
+                    }
                 } label: {
-                    Label("Duplicate block", systemImage: "square.on.square")
+                    Image(systemName: "plus")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Palette.secondaryText)
+                        .frame(width: 18, height: 24)
+                        .contentShape(Rectangle())
                 }
-                Button(role: .destructive) {
-                    viewModel.deleteBlock(block.id)
-                } label: {
-                    Label("Delete block", systemImage: "trash")
+                .menuStyle(.borderlessButton)
+                .pointingHandCursor()
+                .menuIndicator(.hidden)
+                .help("Insert block")
+
+                if block.type == .table {
+                    TableOptionsMenu(viewModel: viewModel, block: block)
                 }
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Palette.secondaryText)
-                    .frame(width: 18, height: 24)
+
+                SixDotHandle()
+                    .frame(width: 16, height: 24)
                     .contentShape(Rectangle())
-            }
-            .menuStyle(.borderlessButton)
-            .pointingHandCursor()
-            .menuIndicator(.hidden)
-            .help("Insert block")
-
-            if block.type == .table {
-                TableOptionsMenu(viewModel: viewModel, block: block)
-            }
-
-            SixDotHandle()
-                .frame(width: 16, height: 24)
-                .contentShape(Rectangle())
-                .onDrag {
-                    NSItemProvider(object: block.id.uuidString as NSString)
-                } preview: {
-                    HStack(spacing: 7) {
-                        Image(systemName: block.type.icon)
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(Palette.secondaryText)
-                        Text(block.text.plainText.isEmpty ? block.type.title : block.text.plainText)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(Palette.primaryText)
-                            .lineLimit(1)
-                            .truncationMode(.tail)
+                    .onDrag {
+                        NSItemProvider(object: block.id.uuidString as NSString)
+                    } preview: {
+                        HStack(spacing: 7) {
+                            Image(systemName: block.type.icon)
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundStyle(Palette.secondaryText)
+                            Text(block.text.plainText.isEmpty ? block.type.title : block.text.plainText)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(Palette.primaryText)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                        }
+                        .frame(maxWidth: 320, alignment: .leading)
+                        .padding(.horizontal, 10)
+                        .frame(height: 32)
+                        .background(Palette.menu)
+                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .stroke(Palette.border, lineWidth: 1)
+                        )
+                        .luminotesShadow()
                     }
-                    .frame(maxWidth: 320, alignment: .leading)
-                    .padding(.horizontal, 10)
-                    .frame(height: 32)
-                    .background(Palette.menu)
-                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .stroke(Palette.border, lineWidth: 1)
-                    )
-                    .luminotesShadow()
-                }
-                .openHandCursor()
-                .help("Drag to move")
+                    .openHandCursor()
+                    .help("Drag to move")
+            }
         }
-        .opacity(isHovering || isMenuOpen ? 1 : 0)
-        .animation(.easeOut(duration: 0.1), value: isHovering)
     }
 
     @ViewBuilder
@@ -180,13 +196,13 @@ struct BlockRowView: View {
             DividerBlockView()
 
         case .code:
-            CodeBlockView(viewModel: viewModel, block: block)
+            CodeBlockView(viewModel: viewModel, block: block, focusRequest: focusRequest)
 
         case .math:
             MathBlockView(viewModel: viewModel, block: block)
 
         case .image:
-            ImageBlockView(viewModel: viewModel, block: block)
+            ImageBlockView(viewModel: viewModel, block: block, focusRequest: focusRequest)
 
         case .pdf:
             PDFBlockView(viewModel: viewModel, block: block)
@@ -210,24 +226,39 @@ struct BlockRowView: View {
             viewModel: viewModel,
             block: block,
             placeholder: block.placeholder,
-            minHeight: BlockTypography.minHeight(for: block.type)
+            minHeight: BlockTypography.minHeight(for: block.type),
+            focusRequest: focusRequest
         )
     }
 
     /// Text blocks all share one editor identity. Accessories (bullets,
     /// checkboxes, and quote rules) are drawn as overlays instead of siblings,
     /// so changing a block's type doesn't recreate its text view.
+    @ViewBuilder
     private var textBlock: some View {
-        editor
-            .padding(.leading, textLeadingPadding)
-            .padding(.trailing, block.type == .callout ? 14 : 0)
-            .padding(.vertical, block.type == .callout ? 10 : 0)
-            .background(calloutBackground)
-            .overlay(alignment: .topLeading) {
-                textAccessory
-            }
-            .overlay(calloutBorder)
-            .opacity(block.type == .todo && block.checked ? 0.5 : 1)
+        if isPlainTextBlock {
+            editor
+        } else {
+            editor
+                .padding(.leading, textLeadingPadding)
+                .padding(.trailing, block.type == .callout ? 14 : 0)
+                .padding(.vertical, block.type == .callout ? 10 : 0)
+                .background(calloutBackground)
+                .overlay(alignment: .topLeading) {
+                    textAccessory
+                }
+                .overlay(calloutBorder)
+                .opacity(block.type == .todo && block.checked ? 0.5 : 1)
+        }
+    }
+
+    private var isPlainTextBlock: Bool {
+        switch block.type {
+        case .paragraph, .heading1, .heading2, .heading3, .heading4, .heading5, .heading6:
+            return true
+        default:
+            return false
+        }
     }
 
     private var textLeadingPadding: CGFloat {
@@ -324,6 +355,7 @@ private struct DividerBlockView: View {
 private struct CodeBlockView: View {
     @ObservedObject var viewModel: EditorViewModel
     let block: Block
+    let focusRequest: FocusRequest?
     @State private var isHovering = false
     @State private var copied = false
 
@@ -388,7 +420,8 @@ private struct CodeBlockView: View {
                 viewModel: viewModel,
                 block: block,
                 placeholder: "Code",
-                minHeight: 34
+                minHeight: 34,
+                focusRequest: focusRequest
             )
             .padding(.horizontal, 12)
             .padding(.vertical, 2)
@@ -406,6 +439,7 @@ private struct CodeBlockView: View {
 private struct ImageBlockView: View {
     @ObservedObject var viewModel: EditorViewModel
     let block: Block
+    let focusRequest: FocusRequest?
     @State private var image: NSImage?
     @State private var isViewingImage = false
     @State private var loadToken = UUID()
@@ -434,7 +468,8 @@ private struct ImageBlockView: View {
                 viewModel: viewModel,
                 block: block,
                 placeholder: "Write a caption…",
-                minHeight: 20
+                minHeight: 20,
+                focusRequest: focusRequest
             )
         }
         .onAppear(perform: loadImage)

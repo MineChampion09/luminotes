@@ -20,10 +20,10 @@ struct EditorView: View {
 
             ScrollViewReader { proxy in
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
+                    LazyVStack(alignment: .leading, spacing: 0) {
                         titleField
                         noteProperties
-                        blockList
+                        blockRows
                         addBlockSpace
                     }
                     .frame(maxWidth: editorWidth, alignment: .leading)
@@ -338,21 +338,31 @@ struct EditorView: View {
         }
     }
 
-    private var blockList: some View {
-        LazyVStack(alignment: .leading, spacing: 0) {
-            ForEach(viewModel.visibleBlocks) { block in
-                BlockRowView(
-                    viewModel: viewModel,
-                    block: block,
-                    number: viewModel.listNumber(for: block),
-                    tracksFrame: viewModel.slashMenu != nil
-                )
+    @ViewBuilder
+    private var blockRows: some View {
+        ForEach(viewModel.visibleBlocks) { block in
+            blockRow(for: block)
+                .equatable()
+                .padding(.trailing, 66)
                 .id(block.id)
-            }
-
-            endDropZone
         }
-        .padding(.trailing, 66)
+
+        endDropZone
+            .padding(.trailing, 66)
+    }
+
+    private func blockRow(for block: Block) -> BlockRowView {
+        BlockRowView(
+            viewModel: viewModel,
+            block: block,
+            number: viewModel.listNumber(for: block),
+            tracksFrame: viewModel.slashMenu != nil,
+            isMenuOpen: viewModel.slashMenu?.blockID == block.id,
+            dropBefore: viewModel.dropTarget == .before(block.id),
+            focusRequest: viewModel.focusRequest?.blockID == block.id
+                ? viewModel.focusRequest
+                : nil
+        )
     }
 
     private var endDropZone: some View {

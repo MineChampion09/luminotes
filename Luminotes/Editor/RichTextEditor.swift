@@ -5,10 +5,11 @@ import SwiftUI
 /// provide live inline styles, precise caret control, and keyboard navigation
 /// between blocks while keeping SwiftUI's declarative layout.
 struct RichTextEditor: NSViewRepresentable {
-    @ObservedObject var viewModel: EditorViewModel
+    let viewModel: EditorViewModel
     let block: Block
     let placeholder: String
     let minHeight: CGFloat
+    let focusRequest: FocusRequest?
     @AppStorage("Luminotes.justifyText") private var justifyText = true
     @AppStorage(BlockTypography.bodyFontSizeKey) private var bodyFontSize = 16.0
     @AppStorage(BlockTypography.lineSpacingKey) private var lineSpacing = 4.0
@@ -37,6 +38,16 @@ struct RichTextEditor: NSViewRepresentable {
         textView.textContainer?.lineFragmentPadding = 0
         textView.textContainer?.widthTracksTextView = true
         textView.usesFindBar = true
+        textView.insertionPointColor = .controlAccentColor
+        // Markdown editing does not benefit from these and they add per-keystroke
+        // work (especially spell checking and text completion).
+        textView.isAutomaticQuoteSubstitutionEnabled = false
+        textView.isAutomaticDashSubstitutionEnabled = false
+        textView.isAutomaticTextReplacementEnabled = false
+        textView.isAutomaticSpellingCorrectionEnabled = false
+        textView.isContinuousSpellCheckingEnabled = false
+        textView.isGrammarCheckingEnabled = false
+        textView.isAutomaticLinkDetectionEnabled = false
 
         textView.delegate = context.coordinator
         textView.onKeyDown = { [weak coordinator = context.coordinator] event in
@@ -50,12 +61,12 @@ struct RichTextEditor: NSViewRepresentable {
         }
 
         context.coordinator.attach(textView: textView, container: container)
-        context.coordinator.update(block: block, placeholder: placeholder, minHeight: minHeight, force: true, justified: justifyText, fontSize: bodyFontSize, lineSpacing: lineSpacing, colorScheme: colorScheme)
+        context.coordinator.update(block: block, placeholder: placeholder, minHeight: minHeight, force: true, justified: justifyText, fontSize: bodyFontSize, lineSpacing: lineSpacing, colorScheme: colorScheme, focusRequest: focusRequest)
         return container
     }
 
     func updateNSView(_ container: BlockTextContainerView, context: Context) {
-        context.coordinator.update(block: block, placeholder: placeholder, minHeight: minHeight, force: false, justified: justifyText, fontSize: bodyFontSize, lineSpacing: lineSpacing, colorScheme: colorScheme)
+        context.coordinator.update(block: block, placeholder: placeholder, minHeight: minHeight, force: false, justified: justifyText, fontSize: bodyFontSize, lineSpacing: lineSpacing, colorScheme: colorScheme, focusRequest: focusRequest)
     }
 
     func sizeThatFits(_ proposal: ProposedViewSize, nsView: BlockTextContainerView, context: Context) -> CGSize? {
@@ -103,11 +114,14 @@ struct RichTextEditor: NSViewRepresentable {
             justified: Bool,
             fontSize: Double,
             lineSpacing: Double,
-            colorScheme: ColorScheme
+            colorScheme: ColorScheme,
+            focusRequest: FocusRequest?
         ) {
             guard let textView, let container else { return }
             blockID = block.id
-            container.minimumHeight = minHeight
+            if abs(container.minimumHeight - minHeight) > 0.5 {
+                container.minimumHeight = minHeight
+            }
 
             let baseFont = BlockTypography.font(
                 for: block.type,
@@ -120,19 +134,6 @@ struct RichTextEditor: NSViewRepresentable {
                 lineSpacing: CGFloat(lineSpacing)
             )
             let fontChanged = lastBaseFont != baseFont
-
-            textView.placeholder = placeholder
-            textView.baseFont = baseFont
-            textView.insertionPointColor = .controlAccentColor
-            textView.textContainerInset = NSSize(width: 0, height: block.type == .code ? 8 : 2)
-
-            let isMonospaced = block.type == .code || block.type == .math
-            textView.isAutomaticQuoteSubstitutionEnabled = !isMonospaced
-            textView.isAutomaticDashSubstitutionEnabled = !isMonospaced
-            textView.isAutomaticTextReplacementEnabled = !isMonospaced
-            textView.isAutomaticSpellingCorrectionEnabled = !isMonospaced
-            textView.isContinuousSpellCheckingEnabled = !isMonospaced
-            textView.isGrammarCheckingEnabled = !isMonospaced
 
             let needsTextUpdate = force ||
                 lastPublished != block.text ||
@@ -147,6 +148,10 @@ struct RichTextEditor: NSViewRepresentable {
             if needsTextUpdate {
                 let previousSelection = textView.selectedRange()
                 let wasFirstResponder = textView.window?.firstResponder === textView
+
+                textView.placeholder = placeholder
+                textView.baseFont = baseFont
+                textView.textContainerInset = NSSize(width: 0, height: block.type == .code ? 8 : 2)
 
                 isProgrammaticUpdate = true
                 let attributed = block.text.attributedString(
@@ -184,17 +189,18 @@ struct RichTextEditor: NSViewRepresentable {
                 container.invalidateIntrinsicContentSize()
                 textView.needsDisplay = true
             } else if fontChanged {
-                lastBaseFont = baseFont
+                textView.baseFont = baseFont
                 textView.typingAttributes = defaultTypingAttributes(
                     font: baseFont,
                     color: textColor,
                     paragraphStyle: paragraphStyle
                 )
+                lastBaseFont = baseFont
                 textView.needsDisplay = true
                 container.invalidateIntrinsicContentSize()
             }
 
-            if let request = viewModel.focusRequest,
+            if let request = focusRequest,
                request.blockID == blockID,
                request.token != handledFocusToken {
                 handledFocusToken = request.token
@@ -275,8 +281,21 @@ struct RichTextEditor: NSViewRepresentable {
             }
 
             if lastType != .code && lastType != .math {
-                autoformatInlineMarkdown(in: textView, storage: storage)
-                autoformatInlineMath(in: textView, storage: storage)
+                // Only run the inline-format regexes when the user just typed a
+                // closing delimiter. Running all of them on every keystroke is
+                // what made ordinary typing expensive.
+                let cursor = textView.selectedRange().location
+                let nsString = storage.string as NSString
+                let lastCode: unichar = (cursor > 0 && cursor <= nsString.length)
+                    ? nsString.character(at: cursor - 1)
+                    : 0
+                let markdownClosers: Set<unichar> = [42, 95, 126, 96, 41] // * _ ~ ` )
+                if markdownClosers.contains(lastCode) {
+                    autoformatInlineMarkdown(in: textView, storage: storage)
+                }
+                if lastCode == 36 { // $
+                    autoformatInlineMath(in: textView, storage: storage)
+                }
             }
 
             let text = RichText(attributed: textView.attributedString())
@@ -1000,9 +1019,12 @@ final class BlockTextContainerView: NSView {
     override func layout() {
         super.layout()
         let width = max(bounds.width, 1)
-        if abs(textView.frame.width - width) > 0.25 || abs(textView.frame.height - bounds.height) > 0.25 {
+        let widthChanged = abs(textView.frame.width - width) > 0.25
+        if widthChanged || abs(textView.frame.height - bounds.height) > 0.25 {
             textView.frame = NSRect(x: 0, y: 0, width: width, height: max(bounds.height, 1))
-            invalidateIntrinsicContentSize()
+            if widthChanged {
+                invalidateIntrinsicContentSize()
+            }
         }
     }
 
