@@ -11,6 +11,13 @@ struct PDFPageGeometry: Equatable {
 @MainActor
 final class PDFCanvasInteraction: ObservableObject {
     @Published var pan: CGSize = .zero
+    /// Kept alongside `pan` so a magnify event reads and writes both values
+    /// atomically. Reading zoom from the parent view could lag a frame behind
+    /// the pan it is paired with, making cursor-anchored zoom drift.
+    @Published var zoom: CGFloat = 1
+    /// The zoom value most recently reported to the parent view. Used to
+    /// distinguish the parent echoing our own change from a toolbar command.
+    var reportedZoom: CGFloat = 1
 
     func scroll(delta: CGSize) {
         pan.width += delta.width
@@ -221,7 +228,7 @@ struct PDFPageCanvas: View {
                     proxy.size.width / pageBounds.width,
                     fitHeight / pageBounds.height
                 )
-                let scale = fitsHeight == nil ? fitScale * zoom : fitScale
+                let scale = fitsHeight == nil ? fitScale * interaction.zoom : fitScale
                 let imageSize = CGSize(
                     width: pageBounds.width * scale,
                     height: pageBounds.height * scale
@@ -305,19 +312,47 @@ struct PDFPageCanvas: View {
         .clipped()
         .overlay {
             if fitsHeight == nil {
-                PDFCanvasEventMonitor(
-                    onScroll: { delta in
-                        interaction.scroll(delta: delta)
-                    },
-                    onMagnify: { magnification in
-                        let newZoom = min(max(zoom * (1 + magnification), 0.5), 4)
-                        onZoomChange?(newZoom)
-                    }
-                )
+                GeometryReader { proxy in
+                    let fitHeight = max(1, proxy.size.height - topInset)
+                    let centerY = topInset + fitHeight / 2
+                    PDFCanvasEventMonitor(
+                        onScroll: { delta, point, command in
+                            if command {
+                                let factor = min(max(1 + delta.height * 0.01, 0.8), 1.2)
+                                applyZoom(
+                                    by: factor,
+                                    at: point,
+                                    in: proxy.size,
+                                    centerY: centerY
+                                )
+                            } else {
+                                interaction.scroll(delta: delta)
+                            }
+                        },
+                        onMagnify: { magnification, point in
+                            applyZoom(
+                                by: 1 + magnification,
+                                at: point,
+                                in: proxy.size,
+                                centerY: centerY
+                            )
+                        }
+                    )
+                    .allowsHitTesting(false)
+                }
                 .allowsHitTesting(false)
             }
         }
-        .onAppear(perform: loadPage)
+        .onAppear {
+            interaction.zoom = zoom
+            interaction.reportedZoom = zoom
+            loadPage()
+        }
+        .onChange(of: zoom) { _, newZoom in
+            guard abs(newZoom - interaction.reportedZoom) > 0.0001 else { return }
+            interaction.zoom = newZoom
+            interaction.reportedZoom = newZoom
+        }
         .onChange(of: pageIndex) { _, _ in loadPage() }
         .onChange(of: document) { _, _ in loadPage() }
     }
@@ -385,6 +420,31 @@ struct PDFPageCanvas: View {
             .onEnded { _ in
                 panStart = nil
             }
+    }
+
+    /// Zooms while keeping the page point under the cursor in place.
+    private func applyZoom(
+        by factor: CGFloat,
+        at point: CGPoint,
+        in size: CGSize,
+        centerY: CGFloat
+    ) {
+        let oldZoom = interaction.zoom
+        let newZoom = min(max(oldZoom * factor, 0.5), 4)
+        guard abs(newZoom - oldZoom) > 0.0001 else { return }
+
+        let center = CGPoint(x: size.width / 2, y: centerY)
+        let dx = point.x - center.x
+        let dy = point.y - center.y
+        let ratio = newZoom / oldZoom
+
+        interaction.pan = CGSize(
+            width: dx - (dx - interaction.pan.width) * ratio,
+            height: dy - (dy - interaction.pan.height) * ratio
+        )
+        interaction.zoom = newZoom
+        interaction.reportedZoom = newZoom
+        onZoomChange?(newZoom)
     }
 
     private func loadPage() {
@@ -1192,8 +1252,8 @@ private final class PDFInlineTextView: NSTextView {
 }
 
 struct PDFCanvasEventMonitor: NSViewRepresentable {
-    let onScroll: (CGSize) -> Void
-    let onMagnify: (CGFloat) -> Void
+    let onScroll: (CGSize, CGPoint, Bool) -> Void
+    let onMagnify: (CGFloat, CGPoint) -> Void
 
     func makeCoordinator() -> Coordinator {
         Coordinator()
@@ -1217,8 +1277,10 @@ struct PDFCanvasEventMonitor: NSViewRepresentable {
     }
 
     final class MonitorView: NSView {
-        var onScroll: ((CGSize) -> Void)?
-        var onMagnify: ((CGFloat) -> Void)?
+        var onScroll: ((CGSize, CGPoint, Bool) -> Void)?
+        var onMagnify: ((CGFloat, CGPoint) -> Void)?
+
+        override var isFlipped: Bool { true }
 
         override func hitTest(_ point: NSPoint) -> NSView? {
             nil
@@ -1243,15 +1305,19 @@ struct PDFCanvasEventMonitor: NSViewRepresentable {
 
                 switch event.type {
                 case .scrollWheel:
+                    let command = event.modifierFlags.contains(.command)
+                        || NSEvent.modifierFlags.contains(.command)
                     view.onScroll?(
                         CGSize(
                             width: event.scrollingDeltaX,
                             height: event.scrollingDeltaY
-                        )
+                        ),
+                        point,
+                        command
                     )
                     return nil
                 case .magnify:
-                    view.onMagnify?(event.magnification)
+                    view.onMagnify?(event.magnification, point)
                     return nil
                 default:
                     return event
