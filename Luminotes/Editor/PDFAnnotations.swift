@@ -396,14 +396,16 @@ struct PDFPageCanvas: View {
 
         let token = UUID()
         loadToken = token
-        let bounds = page.bounds(for: .cropBox)
-        pageBounds = bounds
+        // PDFKit's thumbnail honors the page's /Rotate value, so the layout
+        // size must be the rotated display size, not the raw crop box.
+        let displayBounds = Self.displayBounds(for: page)
+        pageBounds = displayBounds
 
         let targetSize = CGSize(
-            width: max(1, bounds.width * 3),
-            height: max(1, bounds.height * 3)
+            width: max(1, displayBounds.width * 3),
+            height: max(1, displayBounds.height * 3)
         )
-        let key = "\(ObjectIdentifier(document))-\(pageIndex)-\(Int(targetSize.width))x\(Int(targetSize.height))" as NSString
+        let key = "\(ObjectIdentifier(document))-\(pageIndex)-\(page.rotation)-\(Int(targetSize.width))x\(Int(targetSize.height))" as NSString
 
         if let cached = Self.imageCache.object(forKey: key) {
             pageImage = cached
@@ -420,6 +422,23 @@ struct PDFPageCanvas: View {
                 pageImage = image
             }
         }
+    }
+
+    /// The size a page occupies after PDFKit applies its rotation. Pages
+    /// scanned sideways commonly carry a 90-degree / 270-degree rotation, for
+    /// which the crop box and the displayed image have swapped dimensions.
+    private static func displayBounds(for page: PDFPage) -> CGRect {
+        let bounds = page.bounds(for: .cropBox)
+        let rotation = ((page.rotation % 360) + 360) % 360
+        guard rotation == 90 || rotation == 270 else {
+            return bounds
+        }
+        return CGRect(
+            x: bounds.minX,
+            y: bounds.minY,
+            width: bounds.height,
+            height: bounds.width
+        )
     }
 }
 
